@@ -1,0 +1,34 @@
+"jpdy": {
+	"questions": {
+		"1": {
+			"q": String,
+			"a": String
+		},
+		"2": {...},
+		...
+	},
+	"j": {
+		"category": {
+			String: {
+				q#: String [value],
+				...
+			}
+		}
+		"category": {...},
+		...
+	},
+	"dj": {
+		"category": {
+			String: {
+				q#: String [value],
+				...
+			}
+		},
+		"category": {...},
+		...
+	},
+	"fj": {
+		q#: String [category],
+		...
+	}
+}
