@@ -1,34 +1,46 @@
 "jpdy": {
 	"questions": {
-		"1": {
+		"number": Number,
+		"0": {
 			"q": String,
 			"a": String
 		},
-		"2": {...},
+		"1": {...},
 		...
 	},
-	"j": {
-		"category": {
-			String: {
+	"j_categories": {
+		"number": Number,
+		"0": {
+			"category": String,
+			"questions": {
 				q#: String [value],
 				...
-			}
-		}
-		"category": {...},
-		...
-	},
-	"dj": {
-		"category": {
-			String: {
-				q#: String [value],
-				...
-			}
+			},
+
 		},
-		"category": {...},
+		"1": {...},
 		...
 	},
-	"fj": {
-		q#: String [category],
+	"dj_categories": {
+		"number": Number,
+		"0": {
+			"category": String,
+			"questions": {
+				q#: String [value],
+				...
+			},
+
+		},
+		"1": {...},
+		...
+	},
+	"fj_categories": {
+		"number": Number,
+		"0": {
+			"category": String,
+			"question": q#
+		},
+		"1": {...},
 		...
 	}
 }

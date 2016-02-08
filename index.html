@@ -2,6 +2,8 @@
 <html>
 <head>
   <title>stripper</title>
+  <script src="https://cdn.firebase.com/js/client/2.3.2/firebase.js"></script>
+
   <style>
     #byte_content {
       margin: 5px 0;
@@ -15,50 +17,191 @@
 <body>
   <input type="file" id="files" name="file" /> Read bytes: 
   <span class="readBytesButtons">
-    <button data-startbyte="0" data-endbyte="2399">1-2400</button>
-    <button data-startbyte="80" data-endbyte="159">81-160</button>
-    <button data-startbyte="160" data-endbyte="239">161-240</button>
+    <button>crunch</button>
+    <button data-startbyte="0" data-endbyte="65535">65535</button>
     <button>entire file</button>
   </span>
   <div id="byte_range"></div>
   <div id="byte_content"></div>
 
   <script>
-    function readBlob(opt_startByte, opt_stopByte) {
+  (function(document) {
+    var filePtr = 0;
+    var qNum, jCatNum, djCatNum, fjCatNum, file, blob, jObject, fbObject,
+        openCurlyLoc, closeCurlyLoc;
+    var reader = new FileReader();
+    var chunkReader = new FileReader();
+    var jString = "";
+    var fb = new Firebase('https://jpdy.firebaseio.com');
+    var jCategories = [], djCategories = []; 
+    var fjNum = 0;
 
+    fb.child('questions').child('number').once('value', function(snapshot) {
+      qNum = snapshot.val() || 0;
+    });
+
+    function showChunk() {
+      var files = document.getElementById('files').files;
+      file = files[0];
+      blob = file.slice(filePtr, filePtr + 65535 < file.size ? filePtr + 65535 : file.size - 1);
+      chunkReader.readAsText(blob);
+    }
+
+    chunkReader.onloadend = function(evt) {
+      if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+        jString += evt.target.result;
+        document.getElementById('byte_content').textContent = jString;
+      }
+    };
+    
+    function getFile() {
       var files = document.getElementById('files').files;
       if (!files.length) {
         alert('Please select a file!');
         return;
       }
-
-      var file = files[0];
-      var start = parseInt(opt_startByte) || 0;
-      var stop = parseInt(opt_stopByte) || file.size - 1;
-
-      var reader = new FileReader();
-
-      // If we use onloadend, we need to check the readyState.
-      reader.onloadend = function(evt) {
-        if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-          document.getElementById('byte_content').textContent = evt.target.result;
-          document.getElementById('byte_range').textContent = 
-              ['Read bytes: ', start + 1, ' - ', stop + 1,
-               ' of ', file.size, ' byte file'].join('');
-        }
-      };
-
-      var blob = file.slice(start, stop + 1);
-      reader.readAsBinaryString(blob);
+      file = files[0];
+      readBlob();
     }
-    
+
+    function readBlob() {
+      blob = file.slice(filePtr, filePtr + 1000 < file.size ? filePtr + 1000 : file.size - 1);
+      filePtr += 1000;
+      reader.readAsText(blob);
+    }
+
+    // If we use onloadend, we need to check the readyState.
+    reader.onloadend = function(evt) {
+      var endChar, cleanString;
+      if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+        jString += evt.target.result;
+        endChar = jString.charAt(jString.length - 1);
+        while (endChar.charCodeAt(0) === 65533) {
+          jString = jString.slice(0, jString.length - 1);
+          filePtr -= 1;
+          endChar = jString.charAt(jString.length - 1);
+        }
+        consumeString();
+      }
+    };
+
+    function consumeString() {
+      openCurlyLoc = jString.indexOf('{');
+      closeCurlyLoc = jString.indexOf('}');
+      if (closeCurlyLoc !== -1) {
+        document.getElementById('byte_content').textContent = jString;
+        jObject = JSON.parse(jString.slice(openCurlyLoc, closeCurlyLoc + 1));
+        //jString = jString.slice(closeCurlyLoc + 1);
+        addQuestion();
+      } else {
+        readBlob();
+      }
+    }
+
+    function addQuestion() {
+      var qObject = {};
+      var question = jObject.question;
+      var answer = jObject.answer;
+
+      question = question.slice(1, question.length - 1);
+      if (/<[^>]*>/i.test(question)) {
+        jString = jString.slice(closeCurlyLoc + 1);
+        consumeString();
+        return;
+      }
+
+      qObject[qNum] = {};
+      qObject[qNum].q = question;
+      answer = answer.replace(/\\/g, '');
+      qObject[qNum].a = answer;
+      fb.child('questions').update(qObject, addEntry);
+    }
+
+    function addEntry(error) {
+      if (error) {
+        consumeString();
+        return;
+      }
+      fb.child('questions').child('number').set(qNum + 1, addCategory);
+    }
+
+    function addCategory(error) {
+      var round = jObject.round;
+      var category = jObject.category;
+      var value = jObject.value;
+      var cats, catIndex, catString, catObject;
+
+      if (error) {
+        consumeString();
+        return;
+      }
+      if (value && parseInt(jObject.show_number) < 3966) {
+        value = '$' + (parseInt(value.slice(1)) * 2);
+      }
+      if (round === 'Jeopardy!') {
+        cats = jCategories;
+        catString = 'j_categories';
+        if (value !== '$200' && value !== '$400' && value !== '$600' && value !== '$800' && value != '$1000') {
+          value = 'DD';
+        }
+      } else if (round === 'Double Jeopardy!') {
+        cats = djCategories;
+        catString = 'dj_categories';
+        if (value !== '$400' && value !== '$800' && value !== '$1200' && value !== '$1600' && value != '$2000') {
+          value = 'DD';
+        }
+      } else {
+        catObject = {};
+        catObject.number = fjNum + 1;
+        catObject[fjNum] = {};
+        catObject[fjNum].category = category;
+        catObject[fjNum].question = qNum;
+        fb.child('fj_categories').update(catObject, incrFJNum);
+        return;
+      }
+      if (cats.includes(category)) {
+        catIndex = cats.indexOf(category);
+        fb.child(catString).child(catIndex).child('questions').child(qNum).set(value, incrQNum);
+      } else {
+        catObject = {};
+        catObject.category = category;
+        catObject.questions = {};
+        catObject.questions[qNum] = value;
+        fb.child(catString).child(cats.length).set(catObject);
+        fb.child(catString).child('number').set(cats.push(category), incrQNum);
+      }
+    }
+
+    function incrFJNum(error) {
+      if (error) {
+        consumeString();
+        return;
+      }
+      fjNum += 1;
+      incrQNum();
+    }
+
+    function incrQNum(error) {
+      if (error) {
+        consumeString();
+        return;
+      }
+      qNum += 1;
+      jString = jString.slice(closeCurlyLoc + 1);
+      consumeString();
+    }
+
     document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {
       if (evt.target.tagName.toLowerCase() == 'button') {
-        var startByte = evt.target.getAttribute('data-startbyte');
-        var endByte = evt.target.getAttribute('data-endbyte');
-        readBlob(startByte, endByte);
+        if (evt.target.innerText === '65535') {
+          showChunk();
+        } else {
+          getFile();
+        }
       }
     }, false);
+  })(document);
+    
   </script>
 </body>
 </html>
