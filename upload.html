@@ -86,12 +86,12 @@
     };
 
     function consumeString() {
-      openCurlyLoc = jString.indexOf('{');
-      closeCurlyLoc = jString.indexOf('}');
+      openCurlyLoc = jString.indexOf('{"');
+      closeCurlyLoc = jString.indexOf('"}');
       if (closeCurlyLoc !== -1) {
         document.getElementById('byte_content').textContent = jString;
-        jObject = JSON.parse(jString.slice(openCurlyLoc, closeCurlyLoc + 1));
-        //jString = jString.slice(closeCurlyLoc + 1);
+        jObject = JSON.parse(jString.slice(openCurlyLoc, closeCurlyLoc + 2));
+        //jString = jString.slice(closeCurlyLoc + 2);
         addQuestion();
       } else {
         readBlob();
@@ -105,7 +105,7 @@
 
       question = question.slice(1, question.length - 1);
       if (/<[^>]*>/i.test(question)) {
-        jString = jString.slice(closeCurlyLoc + 1);
+        jString = jString.slice(closeCurlyLoc + 2);
         consumeString();
         return;
       }
@@ -187,7 +187,7 @@
         return;
       }
       qNum += 1;
-      jString = jString.slice(closeCurlyLoc + 1);
+      jString = jString.slice(closeCurlyLoc + 2);
       consumeString();
     }
 
