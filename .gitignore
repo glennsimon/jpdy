@@ -1,3 +1,7 @@
 JEOPARDY_QUESTIONS1.json
 sometext
 sometext2
+node_modules
+dist/
+.tmp
+app.yaml
