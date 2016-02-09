@@ -38,7 +38,36 @@
 
     fb.child('questions').child('number').once('value', function(snapshot) {
       qNum = snapshot.val() || 0;
+      nextThing();
     });
+
+    function nextThing() { 
+      fb.child('j_categories').once('value', function(snapshot) {
+        snapshot.forEach(function(snap) {
+          if (snap.key() !== 'number') {
+            jCategories.push(snap.val().category);
+          }
+        });
+        nextNextThing();
+      });
+    }
+
+    function nextNextThing() {
+      fb.child('dj_categories').once('value', function(snapshot) {
+        snapshot.forEach(function(snap) {
+          if (snap.key() !== 'number') {
+            djCategories.push(snap.val().category);
+          }
+        });
+        lastThing();
+      });
+    }
+
+    function lastThing() {
+      fb.child('fj_categories').child('number').once('value', function(snapshot) {
+        fjNum = snapshot.val() || 0;
+      });
+    }
 
     function showChunk() {
       var files = document.getElementById('files').files;
@@ -66,6 +95,7 @@
 
     function readBlob() {
       blob = file.slice(filePtr, filePtr + 1000 < file.size ? filePtr + 1000 : file.size - 1);
+      if (blob.size === 0) return;
       filePtr += 1000;
       reader.readAsText(blob);
     }
@@ -88,6 +118,10 @@
     function consumeString() {
       openCurlyLoc = jString.indexOf('{"');
       closeCurlyLoc = jString.indexOf('"}');
+      if (closeCurlyLoc !== -1 && closeCurlyLoc < openCurlyLoc) {
+        jString = jString.slice(closeCurlyLoc + 2);
+        closeCurlyLoc = jString.indexOf('"}');
+      }
       if (closeCurlyLoc !== -1) {
         document.getElementById('byte_content').textContent = jString;
         jObject = JSON.parse(jString.slice(openCurlyLoc, closeCurlyLoc + 2));
