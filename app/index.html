@@ -56,6 +56,7 @@
         <div class="mdl-layout__header-row">
           <span class="mdl-layout-title">JPDY</span>
           <div class="mdl-layout-spacer"></div>
+          <button id="authButton">Login</button>
           <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
             <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
               <i class="material-icons">search</i>
@@ -77,9 +78,9 @@
       </header>
       <div class="jpdy-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
         <header class="jpdy-drawer-header">
-          <img src="images/user.jpg" class="jpdy-avatar">
+          <img id="profilePic" src="images/user.jpg" class="jpdy-avatar" alt="profile picture">
           <div class="jpdy-avatar-dropdown">
-            <span>hello@example.com</span>
+            <span id="profileName">hello@example.com</span>
             <div class="mdl-layout-spacer"></div>
             <button id="accbtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
               <i class="material-icons" role="presentation">arrow_drop_down</i>
@@ -138,14 +139,22 @@
           </div>
           <div class="jpdy-value mdl-grid mdl-cell--12-col">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-              <input class="mdl-textfield__input" type="text" id="sample3">
-              <label class="mdl-textfield__label" for="sample3">Enter your answer here...</label>
+              <input class="mdl-textfield__input" type="text" id="userAnswer">
+              <label class="mdl-textfield__label" for="userAnswer">Enter your answer here...</label>
             </div>
           </div>
         </div>
       </main>
+
     </div>
-    <script src="https://code.getmdl.io/1.1.1/material.min.js"></script>
+    <div id="login">
+      <h2 id="loginHeading">Log In</h2>
+      <div class="loginButtons">
+        <button id="googleLogin">Login with google</button>        
+      </div>
+    </div>
+
+  <script src="https://code.getmdl.io/1.1.1/material.min.js"></script>
     <!-- build:js(app/) ../../scripts/main.min.js -->
     <script src="scripts/main.js"></script>
     <!-- endbuild -->

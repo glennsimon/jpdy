@@ -81,14 +81,21 @@
     });
   }
 
-  var now, year, month, today, gameMonday, weekStart, gameObject, fbGameLocation,
-    dayIndex;
+  var now, year, month, today, gameMonday, weekStart, gameObject;
+  var fbGameLocation, dayIndex, connection, userId, connected;  
   var fb = new Firebase('https://jpdy.firebaseio.com');
+  var fbConnected = fb.child('.info/connected');
   var fbJCategories = fb.child('j_categories');
   var fbDJCategories = fb.child('dj_categories');
   var fbFJCategories = fb.child('fj_categories');
-  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var userAnswerElement = querySelector('#userAnswer');
+  var loginWindow = querySelector('#login');
+  var googleLogin = querySelector('#googleLogin');
+  var authButton = querySelector('#authButton');
+  var loggedIn = false;
+  
 
   now = new Date();
   today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
@@ -125,7 +132,7 @@
     fb.child('fj_categories').child(catNum).once('value', function(snapshot) {
       result = snapshot.val();
       gameObject['6'] = {};
-      gameObject['6'][new String(result.question)] = result.category;
+      gameObject['6']['' + result.question] = result.category;
       setupRound();
     });
   }
@@ -175,16 +182,114 @@
     returnObject = {};
     finalQs.forEach(function(obj) {
       key = Object.keys(obj)[0];
-      returnObject[key] = obj[key]
+      returnObject[key] = obj[key];
     });
     return returnObject;
   }
 
   function saveGame() {
     fb.child('games').child(year).child(month).child(gameMonday).set(gameObject);
+    play();
   }
 
   function play() {
 
   }
+
+  /*** LOGIN AND AUTH ***/
+  fbConnected.on('value', function(snap) {
+    connected = snap.val();
+    setOnlineStatus();
+  });
+
+  function setOnlineStatus() {
+    if (connected && userId) {
+      // We're connected and the user is authorized
+      // add this device to the users connections list
+      connection = fb.child('people').child(userId).child('online').push(true);
+      connection.onDisconnect().remove();
+    } else if (connection) {
+      connection.remove();
+    }
+  }
+
+  userAnswerElement.addEventListener('focus', function() {
+    if (!loggedIn) {
+      loginWindow.style.display = 'flex';
+    }
+  });
+
+  authButton.addEventListener('click', function() {
+    if (loggedIn) {
+      fb.unauth();
+    } else {
+      loginWindow.style.display = 'flex';
+    }
+  });
+
+  googleLogin.addEventListener('click', function() {
+    loginWindow.style.display = 'none';
+    // prefer pop-ups, so we don't navigate away from the page
+    fb.authWithOAuthPopup('google', function(error, authData) {
+      if (error) {
+        if (error.code === 'TRANSPORT_UNAVAILABLE') {
+          // fall-back to browser redirects, and pick up the session
+          // automatically when we come back to the origin page
+          fb.authWithOAuthRedirect('google', function(error) {
+            console.log('Auth failure with error: ' + error);
+          });
+        }
+      } else if (authData) {
+        console.log(authData);
+      }
+    });
+  });
+
+  fb.onAuth(function(authData) {
+    if (authData) {
+      loggedIn = true;
+      authButton.textContent = 'Logout';
+      userId = authData.uid;
+      showProfile(true, authData);
+      recordAuth(authData);
+    } else {
+      authButton.textContent = 'Login';
+      if (loggedIn) {
+        showProfile(false);
+      }
+      loggedIn = false;
+      userId = undefined;
+    }
+    setOnlineStatus();
+  });
+
+  function showProfile(makeVisible, authData) {
+    var profilePic = querySelector('#profilePic');
+    var profileName = querySelector('#profileName');
+
+    if (makeVisible) {
+      profileName.textContent = authData.google.displayName.split(' ')[0];
+      profilePic.setAttribute('src', authData.google.profileImageURL);
+      profilePic.style.display = 'block';
+    } else {
+      profilePic.style.display = 'none';
+    }
+  }
+
+  function recordAuth(authData) {
+    var fbUser = fb.child('people').child(userId);
+
+    fbUser.once('value', function(snapshot) {
+      if (!snapshot.val()) {
+        // Use update instead of set in case there is a race condition with
+        // currentStory: storyId
+        fbUser.update({
+          'userName': authData.google.displayName,
+          'provider': 'google',
+          'gameScore': 0
+        });
+      }
+    });
+  }
+
 })(document);
