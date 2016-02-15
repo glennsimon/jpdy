@@ -21,7 +21,7 @@
   'use strict';
 
   var querySelector = document.querySelector.bind(document);
-  
+
   // Check to make sure service workers are supported in the current browser,
   // and that the current page is accessed from a secure origin. Using a
   // service worker from an insecure origin will trigger JS console errors. See
@@ -81,5 +81,110 @@
     });
   }
 
-  // Your custom JavaScript goes here
+  var now, year, month, today, gameMonday, weekStart, gameObject, fbGameLocation,
+    dayIndex;
+  var fb = new Firebase('https://jpdy.firebaseio.com');
+  var fbJCategories = fb.child('j_categories');
+  var fbDJCategories = fb.child('dj_categories');
+  var fbFJCategories = fb.child('fj_categories');
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  now = new Date();
+  today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
+  weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
+  gameMonday = weekStart.getDate();
+  console.log(weekStart);
+  month = months[weekStart.getMonth()];
+  year = weekStart.getFullYear();
+  fbGameLocation = fb.child(year).child(month).child(gameMonday);
+  fbGameLocation.once('value', function(snapshot) {
+    gameObject = snapshot.val();
+    if (gameObject) {
+      play();
+    } else {
+      initWeek();
+    }
+  });
+
+  function initWeek() {
+    var i, numCats, catNum;
+
+    dayIndex = 0;
+    gameObject = {};
+    fb.child('fj_categories').child('number').once('value', function(snapshot) {
+      numCats = snapshot.val();
+      catNum = Math.floor(Math.random() * numCats);
+      setFinal(catNum);
+    });
+  }
+
+  function setFinal(catNum) {
+    var result;
+
+    fb.child('fj_categories').child(catNum).once('value', function(snapshot) {
+      result = snapshot.val();
+      gameObject['6'] = {};
+      gameObject['6'][new String(result.question)] = result.category;
+      setupRound();
+    });
+  }
+
+  function setupRound() {
+    var round, numCats;
+      
+    round = dayIndex < 3 ? 'j_categories' : 'dj_categories';
+    fb.child(round).child('number').once('value', function(snapshot) {
+      numCats = snapshot.val();
+      prepGameData(round, numCats);
+    });
+  }
+
+  function prepGameData(round, numCats) {
+    var catNum, qList, dayObject;
+    catNum = Math.floor(Math.random() * numCats);
+    fb.child(round).child(catNum).once('value', function(snapshot) {
+      var result = snapshot.val();
+      dayObject = {};
+      dayObject.category = result.category;
+      qList = result.questions;
+      console.log(qList);
+      dayObject.questions = selectQuestions(qList);
+      gameObject['' + dayIndex] = dayObject;
+      dayIndex += 1;
+      dayIndex < 6 ? setupRound() : saveGame();
+    });
+  }
+
+  function selectQuestions(qList) {
+    var i, randomQ, qObject, returnObject, key;
+    var initialQs = Object.keys(qList);
+    var finalQs = [];
+
+    randomQ = initialQs[Math.floor(Math.random() * initialQs.length)];
+    for (i = 0; i < initialQs.length; i++) {
+      if (Math.abs(parseInt(initialQs[i]) - parseInt(randomQ)) < 100) {
+        qObject = {};
+        qObject[initialQs[i]] = qList[initialQs[i]];
+        finalQs.push(qObject);
+      }
+    }
+    while (finalQs.length > 3) {
+      finalQs.splice(Math.floor(Math.random() * finalQs.length), 1);
+    }
+    returnObject = {};
+    finalQs.forEach(function(obj) {
+      key = Object.keys(obj)[0];
+      returnObject[key] = obj[key]
+    });
+    return returnObject;
+  }
+
+  function saveGame() {
+    fb.child('games').child(year).child(month).child(gameMonday).set(gameObject);
+  }
+
+  function play() {
+
+  }
 })(document);

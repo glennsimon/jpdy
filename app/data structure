@@ -1,0 +1,62 @@
+{
+	"people": {
+		authUidString: {
+			"currentStory": storyAutoHash,
+			"gameScore": Number,
+			"online": {
+				deviceAutoHash: true,
+				...
+			},
+			"provider": String,
+			"userName": String
+		},
+		...
+	},
+	"games": {
+		"2016": {
+			"Jan": {
+				1stMondayDate#: {
+					"0": {
+						"category": String,
+						"questions": {
+							q#: String [value],
+							q#: String [value],
+							q#: String [value]
+						}
+					},
+					"1": {
+						...
+					},
+					...,
+					"6": {q#: String [category]}
+				},
+				2ndMondayDate#: {
+
+				}
+			}
+		},
+		"2017": {...},
+		...
+	}
+}
+
+turnObject = {
+	"key": turnEntryAutoHash,
+	"turnStartTime": Firebase.ServerValue.TIMESTAMP,
+	"turnEntries": [
+		{
+			"key": entryAutoHash, 
+			"entry": String, 
+			"entryVotes": {
+				"con": {
+					authUidString: true, ...
+				}, 
+				"pro": {
+					authUidString: true, ...
+				}
+			},
+			"user": authUidString
+		},
+		...
+	],
+}
