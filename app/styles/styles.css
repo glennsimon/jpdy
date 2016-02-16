@@ -41,6 +41,9 @@ html, body {
   align-items: center;
   justify-content: center;
 }
+.jpdy-center {
+  justify-content: center;
+}
 .jpdy-hide {
   display: none;
 }
@@ -52,11 +55,11 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-.jpdy-value {
+#jpdy-value {
   font-size: 34px;
   justify-content: center;
 }
-.jpdy-dj-value {
+#jpdy-dj-value {
   justify-content: center;
 }
 .jpdy-pts-label {

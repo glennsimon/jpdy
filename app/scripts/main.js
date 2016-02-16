@@ -82,12 +82,15 @@
   }
 
   var now, year, month, today, gameMonday, weekStart, gameObject;
-  var fbGameLocation, dayIndex, connection, userId, connected;  
+  var fbGameLocation, dayIndex, connection, userId, connected, todaysRound;  
   var fb = new Firebase('https://jpdy.firebaseio.com');
   var fbConnected = fb.child('.info/connected');
   var fbJCategories = fb.child('j_categories');
   var fbDJCategories = fb.child('dj_categories');
   var fbFJCategories = fb.child('fj_categories');
+  var valueElement = querySelector('#value');
+  var categoryElement = querySelector('#category');
+  var clueElement = querySelector('#clue');
   var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var userAnswerElement = querySelector('#userAnswer');
@@ -95,19 +98,62 @@
   var googleLogin = querySelector('#googleLogin');
   var authButton = querySelector('#authButton');
   var loggedIn = false;
+  var todaysQs = [];
   
+  function play() {
+    
+    if (today === 6) {
+      finalPlay();
+      return;
+    }
+    todaysRound = gameObject[today];
+    getQ(0, Object.keys(todaysRound.questions));
+  }
 
+  function updateDisplay(index, key) {
+    var value = todaysRound.questions[key];
+    if (value !== 'DD') {
+      querySelector('#jpdy-value').classList.remove('jpdy-hide');
+      querySelector('#jpdy-dj-value').classList.add('jpdy-hide');
+      clueElement.textContent = todaysQs[index].q;
+      valueElement.textContent = value.slice(1);
+    } else {
+      querySelector('#jpdy-dj-value').classList.remove('jpdy-hide');
+      querySelector('#jpdy-value').classList.add('jpdy-hide');
+      clueElement.textContent = 'Enter a wager to reveal the clue!';
+      clueElement.style.color = 'deep-orange';
+    }
+    categoryElement.textContent = gameObject[today].category;
+  }
+
+  function getQ(index, keys) {
+    if (todaysQs[index]) {
+      updateDisplay(index, keys[index]);
+      return;
+    }
+    fb.child('questions').child(keys[index]).once('value', function(snapshot) {
+      todaysQs[index] = snapshot.val();
+      updateDisplay(index, keys[index]);
+    });
+  }
+
+  function finalPlay() {
+
+  }
+
+  /*** SET UP GAME FOR WEEK ***/
   now = new Date();
   today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
   weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
   gameMonday = weekStart.getDate();
-  console.log(weekStart);
+  // console.log(weekStart);
   month = months[weekStart.getMonth()];
   year = weekStart.getFullYear();
-  fbGameLocation = fb.child(year).child(month).child(gameMonday);
+  fbGameLocation = fb.child('games').child(year).child(month).child(gameMonday);
   fbGameLocation.once('value', function(snapshot) {
     gameObject = snapshot.val();
     if (gameObject) {
+      // console.log(gameObject);
       play();
     } else {
       initWeek();
@@ -155,7 +201,7 @@
       dayObject = {};
       dayObject.category = result.category;
       qList = result.questions;
-      console.log(qList);
+      // console.log(qList);
       dayObject.questions = selectQuestions(qList);
       gameObject['' + dayIndex] = dayObject;
       dayIndex += 1;
@@ -190,10 +236,6 @@
   function saveGame() {
     fb.child('games').child(year).child(month).child(gameMonday).set(gameObject);
     play();
-  }
-
-  function play() {
-
   }
 
   /*** LOGIN AND AUTH ***/
