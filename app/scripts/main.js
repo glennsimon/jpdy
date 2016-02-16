@@ -101,7 +101,6 @@
   var todaysQs = [];
   
   function play() {
-    
     if (today === 6) {
       finalPlay();
       return;

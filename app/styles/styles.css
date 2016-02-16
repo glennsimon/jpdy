@@ -43,6 +43,7 @@ html, body {
 }
 .jpdy-center {
   justify-content: center;
+  align-items: center;
 }
 .jpdy-hide {
   display: none;
