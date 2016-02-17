@@ -19,16 +19,28 @@
 					"0": {
 						"category": String,
 						"questions": {
-							q#: String [value],
-							q#: String [value],
-							q#: String [value]
+							"0": {
+								"key": q#,
+								"value": String
+							},
+							"1": {
+								"key": q#,
+								"value": String
+							},
+							"2": {
+								"key": q#,
+								"value": String
+							}
 						}
 					},
 					"1": {
 						...
 					},
 					...,
-					"6": {q#: String [category]}
+					"6": {
+						"key": q#,
+						"category": String
+					}
 				},
 				2ndMondayDate#: {
 

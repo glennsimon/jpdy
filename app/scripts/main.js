@@ -82,8 +82,8 @@
   }
 
   // initially undefined vars
-  var now, year, month, today, gameMonday, weekStart, gameObject;
-  var fbGameLocation, dayIndex, connection, userId, connected, todaysRound;  
+  var now, year, month, today, gameMonday, weekStart, gameArray;
+  var fbGameLocation, dayIndex, connection, userId, connected, qIndex; //, todaysRound;  
   // firebase vars
   var fb = new Firebase('https://jpdy.firebaseio.com');
   var fbConnected = fb.child('.info/connected');
@@ -117,6 +117,10 @@
     }
   });
 
+  function enterAnswer() {
+
+  }
+
   /*** PLAY GAME ***/
 
   function play() {
@@ -124,42 +128,28 @@
       finalPlay();
       return;
     }
-    todaysRound = gameObject[today];
-    getQ(0, Object.keys(todaysRound.questions));
+    //todaysRound = gameArray[today];
+    qIndex = 0;
+    getQ(); //, Object.keys(todaysRound.questions));
   }
 
-  function play() {         do this when you first get the object from firebase so gameobject is already in the right format
-    var i, tempArray, rObject;
-
-    todaysRound = gameObject[today];
-    if (today < 6) {
-      tempArray = Object.keys(todaysRound.questions);
-      for (i = 0; i < tempArray.length; i++) {
-        rObject = {};
-        rObject[tempArray[i]] = todaysRound.questions[tempArray[i]];
-        tempArray[i] = rObject;
-      }
-      todaysRound.questions = tempArray;
-    }
-  }
-
-  function getQ(index, keys) {
-    if (todaysQs[index]) {
-      updateDisplay(index, keys[index]);
+  function getQ() { //, keys) {
+    if (todaysQs[qIndex]) {
+      updateDisplay(index); //, keys[index]);
       return;
     }
-    fb.child('questions').child(keys[index]).once('value', function(snapshot) {
-      todaysQs[index] = snapshot.val();
-      updateDisplay(index, keys[index]);
+    fb.child('questions').child(gameArray[today].questions[qIndex].key).once('value', function(snapshot) {
+      todaysQs[qIndex] = snapshot.val();
+      updateDisplay(); //, keys[index]);
     });
   }
 
-  function updateDisplay(index, key) {
-    var val = todaysRound.questions[key];
+  function updateDisplay() {
+    var val = gameArray[today].questions[qIndex].value;
     if (val !== 'DD') {
       querySelector('#jpdy-value').classList.remove('jpdy-hide');
       querySelector('#jpdy-dj-value').classList.add('jpdy-hide');
-      clue.textContent = todaysQs[index].q;
+      clue.textContent = todaysQs[qIndex].q;
       value.textContent = val.slice(1);
     } else {
       querySelector('#jpdy-dj-value').classList.remove('jpdy-hide');
@@ -167,7 +157,7 @@
       clue.textContent = 'Enter a wager to reveal the clue!';
       clue.style.color = 'mdl-color--deep-orange';
     }
-    categoryElement.textContent = gameObject[today].category;
+    categoryElement.textContent = gameArray[today].category;
   }
 
   function finalPlay() {
@@ -185,9 +175,9 @@
   year = weekStart.getFullYear();
   fbGameLocation = fb.child('games').child(year).child(month).child(gameMonday);
   fbGameLocation.once('value', function(snapshot) {
-    gameObject = snapshot.val();
-    if (gameObject) {
-      // console.log(gameObject);
+    gameArray = snapshot.val();
+    if (gameArray) {
+      // console.log(gameArray);
       play();
     } else {
       initWeek();
@@ -198,7 +188,7 @@
     var i, numCats, catNum;
 
     dayIndex = 0;
-    gameObject = {};
+    gameArray = [];
     fb.child('fj_categories').child('number').once('value', function(snapshot) {
       numCats = snapshot.val();
       catNum = Math.floor(Math.random() * numCats);
@@ -211,8 +201,9 @@
 
     fb.child('fj_categories').child(catNum).once('value', function(snapshot) {
       result = snapshot.val();
-      gameObject['6'] = {};
-      gameObject['6']['' + result.question] = result.category;
+      gameArray[6] = {};
+      gameArray[6].key = String(result.question);
+      gameArray[6].category = result.category;
       setupRound();
     });
   }
@@ -237,7 +228,7 @@
       qList = result.questions;
       // console.log(qList);
       dayObject.questions = selectQuestions(qList);
-      gameObject['' + dayIndex] = dayObject;
+      gameArray[String(dayIndex)] = dayObject;
       dayIndex += 1;
       dayIndex < 6 ? setupRound() : saveGame();
     });
@@ -252,23 +243,24 @@
     for (i = 0; i < initialQs.length; i++) {
       if (Math.abs(parseInt(initialQs[i]) - parseInt(randomQ)) < 100) {
         qObject = {};
-        qObject[initialQs[i]] = qList[initialQs[i]];
+        qObject.key = initialQs[i]
+        qObject.value = qList[initialQs[i]];
         finalQs.push(qObject);
       }
     }
     while (finalQs.length > 3) {
       finalQs.splice(Math.floor(Math.random() * finalQs.length), 1);
     }
-    returnObject = {};
-    finalQs.forEach(function(obj) {
-      key = Object.keys(obj)[0];
-      returnObject[key] = obj[key];
-    });
-    return returnObject;
+    // returnObject = {};
+    // finalQs.forEach(function(obj) {
+    //   key = Object.keys(obj)[0];
+    //   returnObject[key] = obj[key];
+    // });
+    return finalQs; // returnObject;
   }
 
   function saveGame() {
-    fb.child('games').child(year).child(month).child(gameMonday).set(gameObject);
+    fb.child('games').child(year).child(month).child(gameMonday).set(gameArray);
     play();
   }
 
