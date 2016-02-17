@@ -81,25 +81,44 @@
     });
   }
 
+  // initially undefined vars
   var now, year, month, today, gameMonday, weekStart, gameObject;
   var fbGameLocation, dayIndex, connection, userId, connected, todaysRound;  
+  // firebase vars
   var fb = new Firebase('https://jpdy.firebaseio.com');
   var fbConnected = fb.child('.info/connected');
   var fbJCategories = fb.child('j_categories');
   var fbDJCategories = fb.child('dj_categories');
   var fbFJCategories = fb.child('fj_categories');
-  var valueElement = querySelector('#value');
+  // elements in index.html
+  var value = querySelector('#value');
   var categoryElement = querySelector('#category');
-  var clueElement = querySelector('#clue');
+  var clue = querySelector('#clue');
+  var loginWindow = querySelector('#loginWindow');
+  var googleLogin = querySelector('#googleLogin');
+  var authButton = querySelector('#authButton');
+  var userAnswer = querySelector('#userAnswer');
+  var answerInput = querySelector('#answerInput');
+  // general initialized vars
   var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var userAnswerElement = querySelector('#userAnswer');
-  var loginWindow = querySelector('#login');
-  var googleLogin = querySelector('#googleLogin');
-  var authButton = querySelector('#authButton');
   var loggedIn = false;
   var todaysQs = [];
   
+  /*** ADD LISTENERS ***/
+
+  // Enter an entry to start turn or add to current turn *
+  userAnswer.addEventListener('keyup', function(e) {
+    var entry, firstProVote;
+
+    if (e.keyCode === 13) {
+      enterAnswer();
+    }
+  });
+
+  /*** PLAY GAME ***/
+
   function play() {
     if (today === 6) {
       finalPlay();
@@ -109,20 +128,19 @@
     getQ(0, Object.keys(todaysRound.questions));
   }
 
-  function updateDisplay(index, key) {
-    var value = todaysRound.questions[key];
-    if (value !== 'DD') {
-      querySelector('#jpdy-value').classList.remove('jpdy-hide');
-      querySelector('#jpdy-dj-value').classList.add('jpdy-hide');
-      clueElement.textContent = todaysQs[index].q;
-      valueElement.textContent = value.slice(1);
-    } else {
-      querySelector('#jpdy-dj-value').classList.remove('jpdy-hide');
-      querySelector('#jpdy-value').classList.add('jpdy-hide');
-      clueElement.textContent = 'Enter a wager to reveal the clue!';
-      clueElement.style.color = 'deep-orange';
+  function play() {         do this when you first get the object from firebase so gameobject is already in the right format
+    var i, tempArray, rObject;
+
+    todaysRound = gameObject[today];
+    if (today < 6) {
+      tempArray = Object.keys(todaysRound.questions);
+      for (i = 0; i < tempArray.length; i++) {
+        rObject = {};
+        rObject[tempArray[i]] = todaysRound.questions[tempArray[i]];
+        tempArray[i] = rObject;
+      }
+      todaysRound.questions = tempArray;
     }
-    categoryElement.textContent = gameObject[today].category;
   }
 
   function getQ(index, keys) {
@@ -136,11 +154,28 @@
     });
   }
 
+  function updateDisplay(index, key) {
+    var val = todaysRound.questions[key];
+    if (val !== 'DD') {
+      querySelector('#jpdy-value').classList.remove('jpdy-hide');
+      querySelector('#jpdy-dj-value').classList.add('jpdy-hide');
+      clue.textContent = todaysQs[index].q;
+      value.textContent = val.slice(1);
+    } else {
+      querySelector('#jpdy-dj-value').classList.remove('jpdy-hide');
+      querySelector('#jpdy-value').classList.add('jpdy-hide');
+      clue.textContent = 'Enter a wager to reveal the clue!';
+      clue.style.color = 'mdl-color--deep-orange';
+    }
+    categoryElement.textContent = gameObject[today].category;
+  }
+
   function finalPlay() {
 
   }
 
   /*** SET UP GAME FOR WEEK ***/
+
   now = new Date();
   today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
   weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
