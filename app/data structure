@@ -1,7 +1,6 @@
 {
 	"people": {
 		authUidString: {
-			"currentStory": storyAutoHash,
 			"gameScore": Number,
 			"online": {
 				deviceAutoHash: true,
@@ -13,62 +12,58 @@
 		...
 	},
 	"games": {
-		"2016": {
-			"Jan": {
-				1stMondayDate#: {
+		YYYYMMDD: {
+			"0": {
+				"category": String,
+				"questions": {
 					"0": {
-						"category": String,
-						"questions": {
-							"0": {
-								"key": q#,
-								"value": String
-							},
-							"1": {
-								"key": q#,
-								"value": String
-							},
-							"2": {
-								"key": q#,
-								"value": String
-							}
-						}
+						"question": q#,
+						"value": String
 					},
 					"1": {
-						...
+						"question": q#,
+						"value": String
 					},
-					...,
-					"6": {
-						"key": q#,
-						"category": String
+					"2": {
+						"question": q#,
+						"value": String
 					}
-				},
-				2ndMondayDate#: {
-
-				}
-			}
-		},
-		"2017": {...},
-		...
-	}
-}
-
-turnObject = {
-	"key": turnEntryAutoHash,
-	"turnStartTime": Firebase.ServerValue.TIMESTAMP,
-	"turnEntries": [
-		{
-			"key": entryAutoHash, 
-			"entry": String, 
-			"entryVotes": {
-				"con": {
-					authUidString: true, ...
-				}, 
-				"pro": {
-					authUidString: true, ...
 				}
 			},
-			"user": authUidString
+			"1": {
+				...
+			},
+			...,
+			"6": {
+				"question": q#,
+				"category": String
+			}
 		},
+		YYYYMMDD: {...},
 		...
-	],
+	},
+	"results": {
+		YYYYMMDD: {
+			authUidString: {
+				"answers": {
+					"0": {
+						"0": {
+							"answer": String,
+							"score": Number
+						},
+						"1": {...},
+						...
+					},
+					"1": {...},
+					...
+					"6": {
+						"answer": String,
+						"score": Number
+					}
+				}
+			},
+			authUidString: {...},
+			...
+		}
+	}
 }

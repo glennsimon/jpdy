@@ -82,8 +82,8 @@
   }
 
   // initially undefined vars
-  var now, year, month, today, gameMonday, weekStart, gameArray;
-  var fbGameLocation, dayIndex, connection, userId, connected, qIndex; //, todaysRound;  
+  var now, today, gameMonday, weekStart, gameArray;
+  var fbGameLocation, dayIndex, connection, userId, connected, qIndex;  
   // firebase vars
   var fb = new Firebase('https://jpdy.firebaseio.com');
   var fbConnected = fb.child('.info/connected');
@@ -128,19 +128,18 @@
       finalPlay();
       return;
     }
-    //todaysRound = gameArray[today];
     qIndex = 0;
-    getQ(); //, Object.keys(todaysRound.questions));
+    getQ();
   }
 
-  function getQ() { //, keys) {
+  function getQ() {
     if (todaysQs[qIndex]) {
-      updateDisplay(index); //, keys[index]);
+      updateDisplay();
       return;
     }
-    fb.child('questions').child(gameArray[today].questions[qIndex].key).once('value', function(snapshot) {
+    fb.child('questions').child(gameArray[today].questions[qIndex].question).once('value', function(snapshot) {
       todaysQs[qIndex] = snapshot.val();
-      updateDisplay(); //, keys[index]);
+      updateDisplay();
     });
   }
 
@@ -169,11 +168,11 @@
   now = new Date();
   today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
   weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
-  gameMonday = weekStart.getDate();
+  gameMonday = String(weekStart.getDate());
   // console.log(weekStart);
-  month = months[weekStart.getMonth()];
-  year = weekStart.getFullYear();
-  fbGameLocation = fb.child('games').child(year).child(month).child(gameMonday);
+  gameMonday = months[weekStart.getMonth()] + gameMonday;
+  gameMonday = weekStart.getFullYear() + gameMonday;
+  fbGameLocation = fb.child('games').child(gameMonday);
   fbGameLocation.once('value', function(snapshot) {
     gameArray = snapshot.val();
     if (gameArray) {
@@ -202,7 +201,7 @@
     fb.child('fj_categories').child(catNum).once('value', function(snapshot) {
       result = snapshot.val();
       gameArray[6] = {};
-      gameArray[6].key = String(result.question);
+      gameArray[6].question = String(result.question);
       gameArray[6].category = result.category;
       setupRound();
     });
@@ -235,7 +234,7 @@
   }
 
   function selectQuestions(qList) {
-    var i, randomQ, qObject, returnObject, key;
+    var i, randomQ, qObject, returnObject;
     var initialQs = Object.keys(qList);
     var finalQs = [];
 
@@ -243,7 +242,7 @@
     for (i = 0; i < initialQs.length; i++) {
       if (Math.abs(parseInt(initialQs[i]) - parseInt(randomQ)) < 100) {
         qObject = {};
-        qObject.key = initialQs[i]
+        qObject.question = initialQs[i]
         qObject.value = qList[initialQs[i]];
         finalQs.push(qObject);
       }
@@ -251,16 +250,11 @@
     while (finalQs.length > 3) {
       finalQs.splice(Math.floor(Math.random() * finalQs.length), 1);
     }
-    // returnObject = {};
-    // finalQs.forEach(function(obj) {
-    //   key = Object.keys(obj)[0];
-    //   returnObject[key] = obj[key];
-    // });
     return finalQs; // returnObject;
   }
 
   function saveGame() {
-    fb.child('games').child(year).child(month).child(gameMonday).set(gameArray);
+    fb.child('games').child(gameMonday).set(gameArray);
     play();
   }
 
