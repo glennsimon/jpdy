@@ -86,7 +86,6 @@
   var fbGameLocation, dayIndex, connection, userId, connected, qIndex;  
   // firebase vars
   var fb = new Firebase('https://jpdy.firebaseio.com');
-  var fbConnected = fb.child('.info/connected');
   var fbJCategories = fb.child('j_categories');
   var fbDJCategories = fb.child('dj_categories');
   var fbFJCategories = fb.child('fj_categories');
@@ -97,27 +96,103 @@
   var loginWindow = querySelector('#loginWindow');
   var googleLogin = querySelector('#googleLogin');
   var authButton = querySelector('#authButton');
-  var userAnswer = querySelector('#userAnswer');
   var answerInput = querySelector('#answerInput');
   // general initialized vars
   var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  var userAnswerElement = querySelector('#userAnswer');
   var loggedIn = false;
   var todaysQs = [];
   
+  /*** INITIALIZE ***/
+
+  now = new Date();
+  today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
+  querySelector('#jpdy-round').textContent = today < 3 ? 'first' : today < 6 ? 'second' : 'final';
+  weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
+  gameMonday = String(weekStart.getDate());
+  // console.log(weekStart);
+  gameMonday = months[weekStart.getMonth()] + gameMonday;
+  gameMonday = weekStart.getFullYear() + gameMonday;
+  fbGameLocation = fb.child('games').child(gameMonday);
+  fbGameLocation.once('value', function(snapshot) {
+    gameArray = snapshot.val();
+    if (gameArray) {
+      // console.log(gameArray);
+      play();
+    } else {
+      initWeek();
+    }
+  });
+
   /*** ADD LISTENERS ***/
 
   // Enter an entry to start turn or add to current turn *
-  userAnswer.addEventListener('keyup', function(e) {
-    var entry, firstProVote;
-
+  querySelector('#jpdy-user-input').addEventListener('keyup', function(e) {
     if (e.keyCode === 13) {
       enterAnswer();
     }
   });
 
+  querySelector('#jpdy-user-input').addEventListener('focus', function() {
+    if (!loggedIn) {
+      loginWindow.style.display = 'flex';
+    }
+  });
+
+  authButton.addEventListener('click', function() {
+    if (loggedIn) {
+      fb.unauth();
+    } else {
+      loginWindow.style.display = 'flex';
+    }
+  });
+
+  googleLogin.addEventListener('click', function() {
+    loginWindow.style.display = 'none';
+    // prefer pop-ups, so we don't navigate away from the page
+    fb.authWithOAuthPopup('google', function(error, authData) {
+      if (error) {
+        if (error.code === 'TRANSPORT_UNAVAILABLE') {
+          // fall-back to browser redirects, and pick up the session
+          // automatically when we come back to the origin page
+          fb.authWithOAuthRedirect('google', function(error) {
+            console.log('Auth failure with error: ' + error);
+          });
+        }
+      } else if (authData) {
+        console.log(authData);
+      }
+    });
+  });
+
+  /*** EVENT RESPONSE FUNCTIONS ***/
+
   function enterAnswer() {
+    var entry;
+    var jpdyUserAnswer = querySelector('#jpdy-user-answer');
+    var jpdyUserInput = querySelector('#jpdy-user-input');
+    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
+    var jpdyAnswer = querySelector('#jpdy-answer');
+    var jpdyResult = querySelector('#jpdy-result');
+    var jpdyResultSymbol = querySelector('#jpdy-result-symbol');
+    var jpdyResultButtons = querySelector('#jpdy-result-buttons');
+
+    entry = jpdyUserInput.value;
+    jpdyUserInputDisplay.classList.add('jpdy-hide');
+    jpdyUserAnswer.textContent = 'your answer: ' + entry;
+    jpdyAnswer.classList.remove('jpdy-hide');
+    jpdyAnswer.textContent = 'correct answer: ' + todaysQs[qIndex].a;
+    jpdyUserAnswer.classList.remove('jpdy-hide');
+    jpdyResult.classList.remove('jpdy-hide');
+    if (entry.toLowerCase() === todaysQs[qIndex].a.toLowerCase()) {
+      jpdyResultSymbol.classList.remove('jpdy-hide');
+      tallyScore(true);
+    } else {
+      jpdyResultButtons.classList.remove('jpdy-hide');
+    }
+  }
+
+  function tallyScore(isCorrect) {
 
   }
 
@@ -147,11 +222,11 @@
     var val = gameArray[today].questions[qIndex].value;
     if (val !== 'DD') {
       querySelector('#jpdy-value').classList.remove('jpdy-hide');
-      querySelector('#jpdy-dj-value').classList.add('jpdy-hide');
+      querySelector('#jpdy-dd-value').classList.add('jpdy-hide');
       clue.textContent = todaysQs[qIndex].q;
       value.textContent = val.slice(1);
     } else {
-      querySelector('#jpdy-dj-value').classList.remove('jpdy-hide');
+      querySelector('#jpdy-dd-value').classList.remove('jpdy-hide');
       querySelector('#jpdy-value').classList.add('jpdy-hide');
       clue.textContent = 'Enter a wager to reveal the clue!';
       clue.style.color = 'mdl-color--deep-orange';
@@ -164,24 +239,6 @@
   }
 
   /*** SET UP GAME FOR WEEK ***/
-
-  now = new Date();
-  today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
-  weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
-  gameMonday = String(weekStart.getDate());
-  // console.log(weekStart);
-  gameMonday = months[weekStart.getMonth()] + gameMonday;
-  gameMonday = weekStart.getFullYear() + gameMonday;
-  fbGameLocation = fb.child('games').child(gameMonday);
-  fbGameLocation.once('value', function(snapshot) {
-    gameArray = snapshot.val();
-    if (gameArray) {
-      // console.log(gameArray);
-      play();
-    } else {
-      initWeek();
-    }
-  });
 
   function initWeek() {
     var i, numCats, catNum;
@@ -259,7 +316,8 @@
   }
 
   /*** LOGIN AND AUTH ***/
-  fbConnected.on('value', function(snap) {
+
+  fb.child('.info/connected').on('value', function(snap) {
     connected = snap.val();
     setOnlineStatus();
   });
@@ -274,38 +332,6 @@
       connection.remove();
     }
   }
-
-  userAnswerElement.addEventListener('focus', function() {
-    if (!loggedIn) {
-      loginWindow.style.display = 'flex';
-    }
-  });
-
-  authButton.addEventListener('click', function() {
-    if (loggedIn) {
-      fb.unauth();
-    } else {
-      loginWindow.style.display = 'flex';
-    }
-  });
-
-  googleLogin.addEventListener('click', function() {
-    loginWindow.style.display = 'none';
-    // prefer pop-ups, so we don't navigate away from the page
-    fb.authWithOAuthPopup('google', function(error, authData) {
-      if (error) {
-        if (error.code === 'TRANSPORT_UNAVAILABLE') {
-          // fall-back to browser redirects, and pick up the session
-          // automatically when we come back to the origin page
-          fb.authWithOAuthRedirect('google', function(error) {
-            console.log('Auth failure with error: ' + error);
-          });
-        }
-      } else if (authData) {
-        console.log(authData);
-      }
-    });
-  });
 
   fb.onAuth(function(authData) {
     if (authData) {
@@ -342,7 +368,11 @@
     var fbUser = fb.child('people').child(userId);
 
     fbUser.once('value', function(snapshot) {
-      if (!snapshot.val()) {
+      var userObject = snapshot.val();
+
+      if (userObject) {
+        querySelector('#jpdy-score').textContent = userObject.game === gameMonday ? userObject.gameScore : 0;
+      } else {
         // Use update instead of set in case there is a race condition with
         // currentStory: storyId
         fbUser.update({

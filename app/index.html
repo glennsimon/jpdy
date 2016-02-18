@@ -110,22 +110,22 @@
       <main class="mdl-layout__content mdl-color--grey-100">
         <div class="mdl-grid jpdy-content">
           <div class="jpdy-round mdl-grid mdl-cell--12-col">
-            <div id="round">first</div>
+            <div id="jpdy-round">first</div>
             <div>&nbsp;round</div>
             <div class="mdl-layout-spacer"></div>
             <div>your score:&nbsp;</div>
-            <div id="jpdy-user-score">1000</div>
+            <div id="jpdy-score">0</div>
           </div>
           <div id="jpdy-value" class="mdl-grid mdl-cell--12-col">
             <div id="value">200</div>
             <div class="jpdy-pts-label">&nbsp;pts</div>
           </div>
-          <div id="jpdy-dj-value" class="mdl-grid mdl-cell--12-col jpdy-hide" style="padding: 0 8px;">
+          <div id="jpdy-dd-value" class="mdl-grid mdl-cell--12-col jpdy-hide" style="padding: 0 8px;">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 150px;">
-              <input id="jpdy-dj-wager" class="mdl-textfield__input" type="text" 
-                pattern="-?[0-9]*(\.[0-9]+)?" style="font-size: 20px">
-              <label class="mdl-textfield__label" for="jpdy-dj-wager">Enter a wager...</label>
-              <span class="mdl-textfield__error">Number, X maximum</span>
+              <input id="jpdy-dd-wager" class="mdl-textfield__input" type="text" 
+                pattern="[0-9]+" style="font-size: 20px">
+              <label class="mdl-textfield__label" for="jpdy-dd-wager">Enter a wager...</label>
+              <span id="wagerErrorMessage" class="mdl-textfield__error">Number, 1000 maximum</span>
             </div>
             <div class="jpdy-pts-label">&nbsp;pts</div>
           </div>
@@ -137,31 +137,31 @@
               class="jpdy-clue mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-grid">
             CLUE
           </div>
-          <div id="answerInput" class="jpdy-center mdl-grid mdl-cell--12-col">
+          <div id="jpdy-user-input-display" class="jpdy-center mdl-grid mdl-cell--12-col">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-              <input class="mdl-textfield__input" type="text" id="userAnswer">
-              <label class="mdl-textfield__label" for="userAnswer">Enter your answer here...</label>
+              <input class="mdl-textfield__input" type="text" id="jpdy-user-input">
+              <label class="mdl-textfield__label" for="jpdy-user-input">Enter your answer here...</label>
             </div>
           </div>
-          <div id="userAnswer" class="jpdy-center mdl-grid mdl-cell--12-col">
+          <div id="jpdy-user-answer" class="jpdy-hide jpdy-center mdl-grid mdl-cell--12-col">
             your answer
           </div>
-          <div id="answer" class="jpdy-center mdl-grid mdl-cell--12-col">
+          <div id="jpdy-answer" class="jpdy-hide jpdy-center mdl-grid mdl-cell--12-col">
             the correct answer
           </div>
-          <div id="answerResult" class="jpdy-center mdl-grid mdl-cell--12-col">
-            <div id="resultSymbol" class="mdl-grid jpdy-center jpdy-hide">
+          <div id="jpdy-result" class="jpdy-hide jpdy-center mdl-grid mdl-cell--12-col">
+            <div id="jpdy-result-symbol" class="mdl-grid jpdy-center jpdy-hide">
               <i class="mdl-color-text--green material-icons">check</i>
               <span>Good job!</span>
             </div>
-            <div id="answerButtons">
+            <div id="jpdy-result-buttons" class="jpdy-hide">
               Are you 
-              <button id="rightButton" class="mdl-button mdl-js-button mdl-button--raised 
+              <button id="jpdy-button-right" class="mdl-button mdl-js-button mdl-button--raised 
                 mdl-js-ripple-effect mdl-button--colored mdl-color--green">
                 right
               </button>
               or
-              <button id="wrongButton" class="mdl-button mdl-js-button mdl-button--raised 
+              <button id="jpdy-button-wrong" class="mdl-button mdl-js-button mdl-button--raised 
                 mdl-js-ripple-effect mdl-button--colored mdl-color--red">
                 wrong
               </button>
@@ -169,15 +169,15 @@
             </div>
           </div>
           <div class="jpdy-round mdl-grid mdl-cell--12-col">
-            <button id="prevButton" class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
+            <button id="jpdy-button-prev" class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
               <i class="material-icons">arrow_back</i>            
             </button>
             <div class="mdl-layout-spacer"></div>
-            <button id="passButton" class="mdl-button mdl-js-button mdl-js-ripple-effect">
+            <button id="jpdy-button-pass" class="mdl-button mdl-js-button mdl-js-ripple-effect">
               pass
             </button>
             <div class="mdl-layout-spacer"></div>
-            <button id="nextButton" class="mdl-button mdl-js-button mdl-js-ripple-effect">
+            <button id="jpdy-button-next" class="mdl-button mdl-js-button mdl-js-ripple-effect">
               <i class="material-icons">arrow_forward</i>            
             </button>
           </div>
