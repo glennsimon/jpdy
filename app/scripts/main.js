@@ -90,7 +90,7 @@
   var fbDJCategories = fb.child('dj_categories');
   var fbFJCategories = fb.child('fj_categories');
   // elements in index.html
-  var value = querySelector('#value');
+  var value = querySelector('#jpdy-value');
   var categoryElement = querySelector('#category');
   var clue = querySelector('#clue');
   var loginWindow = querySelector('#loginWindow');
@@ -147,7 +147,11 @@
     }
   });
 
-  googleLogin.addEventListener('click', function() {
+  googleLogin.addEventListener('click', login);
+
+  /*** EVENT RESPONSE FUNCTIONS ***/
+
+  function login() {
     loginWindow.style.display = 'none';
     // prefer pop-ups, so we don't navigate away from the page
     fb.authWithOAuthPopup('google', function(error, authData) {
@@ -163,9 +167,7 @@
         console.log(authData);
       }
     });
-  });
-
-  /*** EVENT RESPONSE FUNCTIONS ***/
+  }
 
   function enterAnswer() {
     var entry;
@@ -186,14 +188,28 @@
     jpdyResult.classList.remove('jpdy-hide');
     if (entry.toLowerCase() === todaysQs[qIndex].a.toLowerCase()) {
       jpdyResultSymbol.classList.remove('jpdy-hide');
-      tallyScore(true);
+      tallyScore(true, entry);
     } else {
       jpdyResultButtons.classList.remove('jpdy-hide');
     }
   }
 
-  function tallyScore(isCorrect) {
+  function tallyScore(isCorrect, entry) {
+    var score, scoreText, totalScore;
+    var jpdyValue = querySelector('#jpdy-value');
+    var jpdyDDWager = querySelector('#jpdy-dd-wager');
+    var jpdyScore = querySelector('#jpdy-score');
+    var value = gameArray[today].questions[qIndex].value;
+    var fbResults = fb.child('results').child(gameMonday).child(userId);
+    var answerObject = {};
 
+    answerObject.answer = entry;
+    scoreText = value === 'DD' ? jpdyDDWager.textContent : jpdyValue.textContent;
+    score = isCorrect ? parseInt(scoreText) : -parseInt(scoreText);
+    answerObject.score = score;
+    totalScore = parseInt(jpdyScore.textContent) + score;
+    fbResults.child('totalScore').set(totalScore);
+    fbResults.child('answers').child(today).child(qIndex).set(answerObject);
   }
 
   /*** PLAY GAME ***/
@@ -221,13 +237,13 @@
   function updateDisplay() {
     var val = gameArray[today].questions[qIndex].value;
     if (val !== 'DD') {
-      querySelector('#jpdy-value').classList.remove('jpdy-hide');
+      querySelector('#jpdy-value-display').classList.remove('jpdy-hide');
       querySelector('#jpdy-dd-value').classList.add('jpdy-hide');
       clue.textContent = todaysQs[qIndex].q;
       value.textContent = val.slice(1);
     } else {
       querySelector('#jpdy-dd-value').classList.remove('jpdy-hide');
-      querySelector('#jpdy-value').classList.add('jpdy-hide');
+      querySelector('#jpdy-value-display').classList.add('jpdy-hide');
       clue.textContent = 'Enter a wager to reveal the clue!';
       clue.style.color = 'mdl-color--deep-orange';
     }

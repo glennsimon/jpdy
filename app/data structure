@@ -1,8 +1,6 @@
 {
 	"people": {
 		authUidString: {
-			"gameScore": Number,
-			"game": YYYYMMMDD,
 			"online": {
 				deviceAutoHash: true,
 				...
@@ -46,6 +44,7 @@
 	"results": {
 		YYYYMMMDD: {
 			authUidString: {
+				"totalScore": Number,
 				"answers": {
 					"0": {
 						"0": {
