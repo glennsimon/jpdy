@@ -140,6 +140,12 @@
     }
   });
 
+  querySelector('#jpdy-button-prev').addEventListener('click', prevQ);
+
+  querySelector('#jpdy-button-pass').addEventListener('click', passQ);
+
+  querySelector('#jpdy-button-next').addEventListener('click', nextQ);
+
   authButton.addEventListener('click', function() {
     if (loggedIn) {
       fb.unauth();
@@ -217,6 +223,34 @@
     jpdyScore.textContent = totalScore;
     userResultsObject.totalScore = totalScore;
     fb.child('results').child(gameMonday).child(userId).set(userResultsObject);
+  }
+
+  function prevQ() {
+    var jpdyButtonPrev = querySelector('#jpdy-button-prev');
+    var jpdyButtonNext = querySelector('#jpdy-button-next');
+
+    qIndex -= 1;
+    if (qIndex === 0) {
+      jpdyButtonPrev.disabled = true;
+    }
+    jpdyButtonNext.disabled = false;
+    getQ();
+  }
+
+  function passQ() {
+
+  }
+
+  function nextQ() {
+    var jpdyButtonPrev = querySelector('#jpdy-button-prev');
+    var jpdyButtonNext = querySelector('#jpdy-button-next');
+
+    qIndex += 1;
+    if (qIndex === gameArray[today].questions.length - 1) {
+      jpdyButtonNext.disabled = true;
+    }
+    jpdyButtonPrev.disabled = false;
+    getQ();
   }
 
   /*** PLAY GAME ***/
