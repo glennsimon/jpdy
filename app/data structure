@@ -48,6 +48,7 @@
 				"answers": {
 					"0": {
 						"0": {
+							"status": String ["new" | "limbo" | "locked"],
 							"answer": String,
 							"score": Number
 						},
@@ -57,6 +58,7 @@
 					"1": {...},
 					...
 					"6": {
+						"status": String ["new" | "limbo" | "locked"],
 						"answer": String,
 						"score": Number
 					}
