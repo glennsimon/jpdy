@@ -140,7 +140,7 @@
           </div>
           <div id="jpdy-user-input-display" class="jpdy-center mdl-grid mdl-cell--12-col">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-              <input class="mdl-textfield__input" type="text" id="jpdy-user-input">
+              <input id="jpdy-user-input" class="mdl-textfield__input" type="text">
               <label class="mdl-textfield__label" for="jpdy-user-input">Enter your answer here...</label>
             </div>
           </div>
@@ -151,9 +151,9 @@
             the correct answer
           </div>
           <div id="jpdy-result" class="jpdy-hide jpdy-center mdl-grid mdl-cell--12-col">
-            <div id="jpdy-result-symbol" class="mdl-grid jpdy-center jpdy-hide">
-              <i class="mdl-color-text--green material-icons">check</i>
-              <span>Good job!</span>
+            <div id="jpdy-result-feedback" class="mdl-grid jpdy-center jpdy-hide">
+              <i id="jpdy-result-symbol" class="mdl-color-text--green material-icons">check</i>
+              <span id="jpdy-result-text">Good job!</span>
             </div>
             <div id="jpdy-result-buttons" class="jpdy-hide">
               Are you 
@@ -169,7 +169,7 @@
               ?
             </div>
           </div>
-          <div class="jpdy-round mdl-grid mdl-cell--12-col">
+          <div class="mdl-grid mdl-cell--12-col">
             <button id="jpdy-button-prev" class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
               <i class="material-icons">arrow_back</i>            
             </button>

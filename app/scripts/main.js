@@ -81,6 +81,13 @@
     });
   }
 
+  // constants
+  var CORRECT_ANSWER_TEXT = 'Good job!';
+  var CORRECT_ANSWER_SYM = 'check';
+  var WRONG_ANSWER_TEXT = 'Oooo, no. Sorry!';
+  var WRONG_ANSWER_SYM = 'close';
+  var PASS_TEXT = 'You passed!';
+  var PASS_SYM = 'sentiment_neutral';
   // initially undefined vars
   var now, today, gameMonday, weekStart, gameArray;
   var gameResultsObject, userResultsObject;
@@ -91,7 +98,6 @@
   var fbDJCategories = fb.child('dj_categories');
   var fbFJCategories = fb.child('fj_categories');
   // elements in index.html
-  var value = querySelector('#jpdy-value');
   var categoryElement = querySelector('#category');
   var clue = querySelector('#clue');
   var loginWindow = querySelector('#loginWindow');
@@ -177,19 +183,24 @@
   }
 
   function enterAnswer() {
-    var entry;
+    var entry, answerObject;
     var jpdyUserInput = querySelector('#jpdy-user-input');
-    var jpdyResultSymbol = querySelector('#jpdy-result-symbol');
+    var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
     var jpdyResultButtons = querySelector('#jpdy-result-buttons');
 
     entry = jpdyUserInput.value;
-    showAnswer(entry);
     if (entry.toLowerCase() === todaysQs[qIndex].a.toLowerCase()) {
-      jpdyResultSymbol.classList.remove('jpdy-hide');
+      jpdyResultFeedback.classList.remove('jpdy-hide');
       tallyScore(true, entry);
     } else {
       jpdyResultButtons.classList.remove('jpdy-hide');
+      answerObject = {};
+      answerObject.answer = entry;
+      answerObject.score = 'tbd';
+      userResultsObject.answers[today][qIndex] = answerObject;
+      fb.child('results').child(gameMonday).child(userId).set(userResultsObject);
     }
+    showAnswer(entry);
   }
 
   function showAnswer(entry) {
@@ -197,6 +208,10 @@
     var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
     var jpdyAnswer = querySelector('#jpdy-answer');
     var jpdyResult = querySelector('#jpdy-result');
+    var jpdyResultButtons = querySelector('#jpdy-result-buttons');
+    var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
+    var jpdyResultSymbol = querySelector('#jpdy-result-symbol');
+    var jpdyResultText = querySelector('#jpdy-result-text');
     
     jpdyUserInputDisplay.classList.add('jpdy-hide');
     jpdyUserAnswer.textContent = 'your answer: ' + entry;
@@ -204,6 +219,43 @@
     jpdyAnswer.textContent = 'correct answer: ' + todaysQs[qIndex].a;
     jpdyUserAnswer.classList.remove('jpdy-hide');
     jpdyResult.classList.remove('jpdy-hide');
+    if (userResultsObject.answers[today][qIndex].score === 'tbd') {
+      jpdyResultFeedback.classList.add('jpdy-hide');
+      jpdyResultButtons.classList.remove('jpdy-hide');
+      return;     
+    } 
+    jpdyResultButtons.classList.add('jpdy-hide');
+    jpdyResultFeedback.classList.remove('jpdy-hide');
+    if (userResultsObject.answers[today][qIndex].score < 0) {
+      jpdyResultSymbol.textContent = WRONG_ANSWER_SYM;
+      jpdyResultText.textContent = WRONG_ANSWER_TEXT;
+      jpdyResultSymbol.classList.remove('mdl-color-text--green');
+      jpdyResultSymbol.classList.add('mdl-color-text--red');
+    } else if (userResultsObject.answers[today][qIndex].score > 0) {
+      jpdyResultSymbol.textContent = CORRECT_ANSWER_SYM;
+      jpdyResultText.textContent = CORRECT_ANSWER_TEXT;
+      jpdyResultSymbol.classList.remove('mdl-color-text--red');
+      jpdyResultSymbol.classList.add('mdl-color-text--green');
+    } else {
+      jpdyResultSymbol.textContent = PASS_SYM;
+      jpdyResultText.textContent = PASS_TEXT;
+      jpdyResultSymbol.classList.remove('mdl-color-text--green');
+      jpdyResultSymbol.classList.remove('mdl-color-text--red');
+    }
+  }
+
+  function hideAnswer() {
+    var jpdyUserAnswer = querySelector('#jpdy-user-answer');
+    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
+    var jpdyAnswer = querySelector('#jpdy-answer');
+    var jpdyResult = querySelector('#jpdy-result');
+    
+    jpdyUserInputDisplay.classList.remove('jpdy-hide');
+    jpdyUserAnswer.textContent = 'your answer';
+    jpdyAnswer.classList.add('jpdy-hide');
+    jpdyAnswer.textContent = 'the correct answer';
+    jpdyUserAnswer.classList.add('jpdy-hide');
+    jpdyResult.classList.add('jpdy-hide');
   }
 
   function tallyScore(isCorrect, entry) {
@@ -228,6 +280,10 @@
   function prevQ() {
     var jpdyButtonPrev = querySelector('#jpdy-button-prev');
     var jpdyButtonNext = querySelector('#jpdy-button-next');
+    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
+    var jpdyUserAnswer = querySelector('#jpdy-user-answer');
+    var jpdyAnswer = querySelector('#jpdy-answer');
+    var jpdyUserResult = querySelector('#jpdy-result');
 
     qIndex -= 1;
     if (qIndex === 0) {
@@ -244,6 +300,10 @@
   function nextQ() {
     var jpdyButtonPrev = querySelector('#jpdy-button-prev');
     var jpdyButtonNext = querySelector('#jpdy-button-next');
+    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
+    var jpdyUserAnswer = querySelector('#jpdy-user-answer');
+    var jpdyAnswer = querySelector('#jpdy-answer');
+    var jpdyUserResult = querySelector('#jpdy-result');
 
     qIndex += 1;
     if (qIndex === gameArray[today].questions.length - 1) {
@@ -279,6 +339,8 @@
     var result;
     var jpdyDDValue = querySelector('#jpdy-dd-value');
     var jpdyValueDisplay = querySelector('#jpdy-value-display')
+    var jpdyUserInput = querySelector('#jpdy-user-input');
+    var jpdyValue = querySelector('#jpdy-value');
     var val = gameArray[today].questions[qIndex].value;
 
     categoryElement.textContent = gameArray[today].category;
@@ -289,7 +351,7 @@
       jpdyValueDisplay.classList.remove('jpdy-hide');
       jpdyDDValue.classList.add('jpdy-hide');
       clue.textContent = todaysQs[qIndex].q;
-      value.textContent = result ? result.score : val.slice(1);
+      jpdyValue.textContent = result && typeof result.score !== 'string' ? Math.abs(result.score) : val.slice(1);
     } else {
       jpdyDDValue.classList.remove('jpdy-hide');
       jpdyValueDisplay.classList.add('jpdy-hide');
@@ -298,6 +360,9 @@
     }
     if (result) {
       showAnswer(result.answer);
+    } else {
+      jpdyUserInput.value = null;
+      hideAnswer();
     }
   }
 
