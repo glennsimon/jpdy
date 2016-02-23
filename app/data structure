@@ -50,6 +50,7 @@
 						"0": {
 							"status": String ["new" | "limbo" | "locked"],
 							"answer": String,
+							"wager": Number,  // DD ONLY!!
 							"score": Number
 						},
 						"1": {...},
@@ -60,6 +61,7 @@
 					"6": {
 						"status": String ["new" | "limbo" | "locked"],
 						"answer": String,
+						"wager": Number,
 						"score": Number
 					}
 				}
