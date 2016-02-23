@@ -92,32 +92,38 @@
   var LIMBO = 'limbo';
   var LOCKED = 'locked';
   // initially undefined vars
-  var now, today, gameMonday, weekStart, gameArray;
-  var gameResultsObject, userResultsObject;
-  var fbGameLocation, dayIndex, connection, userId, connected, qIndex;  
+  var now;
+  var today;
+  var gameMonday;
+  var weekStart;
+  var gameArray;
+  var gameResultsObject;
+  var userResultsObject;
+  var fbGameLocation;
+  var dayIndex;
+  var connection;
+  var userId;
+  var connected;
+  var qIndex;
   // firebase vars
   var fb = new Firebase('https://jpdy.firebaseio.com');
-  var fbJCategories = fb.child('j_categories');
-  var fbDJCategories = fb.child('dj_categories');
-  var fbFJCategories = fb.child('fj_categories');
   // elements in index.html
   var categoryElement = querySelector('#category');
   var loginWindow = querySelector('#loginWindow');
   var googleLogin = querySelector('#googleLogin');
   var authButton = querySelector('#authButton');
-  var answerInput = querySelector('#answerInput');
   // general initialized vars
   var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var loggedIn = false;
-  //var gameInProgress = false;
   var todaysQs = [];
-  
-  /*** INITIALIZE ***/
+
+  /* ** INITIALIZE ** */
 
   now = new Date();
-  today = now.getDay() > 0 ? now.getDay() - 1 : 6; // 0-6 with 0===Monday
-  querySelector('#jpdy-round').textContent = today < 3 ? 'first' : today < 6 ? 'second' : 'final';
+  today = now.getDay() > 0 ? now.getDay() - 1 : 6;
+  querySelector('#jpdy-round').textContent = today < 3 ? 
+      'first' : today < 6 ? 'second' : 'final';
   weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
   gameMonday = String(weekStart.getDate());
   // console.log(weekStart);
@@ -134,7 +140,7 @@
     }
   });
 
-  /*** ADD LISTENERS ***/
+  /* ** ADD LISTENERS ** */
 
   // Enter an entry to start turn or add to current turn *
   querySelector('#jpdy-user-input').addEventListener('keyup', function(e) {
@@ -177,7 +183,7 @@
 
   googleLogin.addEventListener('click', login);
 
-  /*** EVENT RESPONSE FUNCTIONS ***/
+  /* ** EVENT RESPONSE FUNCTIONS ** */
 
   function login() {
     loginWindow.style.display = 'none';
@@ -198,7 +204,8 @@
   }
 
   function enterAnswer() {
-    var entry, answerObject;
+    var entry;
+    var answerObject;
     var jpdyUserInput = querySelector('#jpdy-user-input');
     var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
     var jpdyResultButtons = querySelector('#jpdy-result-buttons');
@@ -218,7 +225,8 @@
   }
 
   function showAnswer(entry) {
-    var status, score;
+    var status;
+    var score;
     var jpdyUserAnswer = querySelector('#jpdy-user-answer');
     var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
     var jpdyAnswer = querySelector('#jpdy-answer');
@@ -284,7 +292,10 @@
   }
 
   function tallyScore(isCorrect, entry) {
-    var score, scoreText, totalScore, answerObject;
+    var score;
+    var scoreText;
+    var totalScore;
+    var answerObject;
     var jpdyValue = querySelector('#jpdy-value');
     var jpdyDDWager = querySelector('#jpdy-dd-wager');
     var jpdyScore = querySelector('#jpdy-score');
@@ -340,7 +351,9 @@
   }
 
   function enterWager() {
-    var wager, totalScore, illegalWagerMessage;
+    var wager;
+    var totalScore;
+    var illegalWagerMessage;
     var jpdyDDWager = querySelector('#jpdy-dd-wager');
     var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
     var jpdyResultButtons = querySelector('#jpdy-result-buttons');
@@ -382,7 +395,7 @@
     } else {
       userResultsObject.answers[6] = userResultsObject.answers[6] || {};
       userResultsObject.answers[6].wager = wager;
-      userResultsObject.answers[6].status = NEW; // LIMBO;
+      userResultsObject.answers[6].status = NEW;
     }
     jpdyValue.textContent = wager;
     jpdyValueDisplay.classList.remove('jpdy-hide');
@@ -397,7 +410,6 @@
 
   function play() {
     if (!(userResultsObject && gameArray)) return; //gameInProgress) return;
-    //gameInProgress = true;
     if (today === 6) {
       finalPlay();
       return;
@@ -418,7 +430,9 @@
   }
 
   function updateDisplay() {
-    var val, wager, result;
+    var val;
+    var wager;
+    var result;
     var jpdyDDValue = querySelector('#jpdy-dd-value');
     var jpdyValueDisplay = querySelector('#jpdy-value-display')
     var jpdyUserInput = querySelector('#jpdy-user-input');
@@ -446,14 +460,6 @@
       jpdyUserInput.value = null;
       hideAnswer();
     }
-    // if (wager) {
-    //   jpdyValue.textContent = wager;
-    //   jpdyValueDisplay.classList.remove('jpdy-hide');
-    //   jpdyDDValue.classList.add('jpdy-hide');
-    //   jpdyClue.textContent = todaysQs[qIndex].q;
-    //   jpdyClue.classList.remove('mdl-color-text--deep-orange');
-    //   jpdyUserInputDisplay.classList.remove('jpdy-hide');
-    // }
     if (val !== 'DD' || wager) {
       jpdyValue.textContent = wager || val.slice(1);      
       jpdyValueDisplay.classList.remove('jpdy-hide');
@@ -486,7 +492,9 @@
   /*** SET UP GAME FOR WEEK ***/
 
   function initWeek() {
-    var i, numCats, catNum;
+    var i;
+    var numCats;
+    var catNum;
 
     dayIndex = 0;
     fb.child('fj_categories').child('number').once('value', function(snapshot) {
@@ -510,7 +518,8 @@
   }
 
   function setupRound() {
-    var round, numCats;
+    var round;
+    var numCats;
       
     round = dayIndex < 3 ? 'j_categories' : 'dj_categories';
     fb.child(round).child('number').once('value', function(snapshot) {
@@ -520,7 +529,9 @@
   }
 
   function prepGameData(round, numCats) {
-    var catNum, qList, dayObject;
+    var catNum;
+    var qList;
+    var dayObject;
     catNum = Math.floor(Math.random() * numCats);
     fb.child(round).child(catNum).once('value', function(snapshot) {
       var result = snapshot.val();
@@ -536,7 +547,10 @@
   }
 
   function selectQuestions(qList) {
-    var i, randomQ, qObject, returnObject;
+    var i;
+    var randomQ;
+    var qObject;
+    var returnObject;
     var initialQs = Object.keys(qList);
     var finalQs = [];
 
@@ -605,10 +619,7 @@
       var userObject = snapshot.val();
 
       if (!userObject) {
-      //   querySelector('#jpdy-score').textContent = userObject.game === gameMonday ? userObject.gameScore : 0;
-      // } else {
-        // Use update instead of set in case there is a race condition with
-        // currentStory: storyId
+        // Use update instead of set in case there is a race condition
         fbUser.update({
           'userName': authData.google.displayName,
           'provider': 'google'
