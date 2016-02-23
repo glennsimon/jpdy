@@ -173,6 +173,16 @@
 
   querySelector('#jpdy-button-next').addEventListener('click', nextQ);
 
+  querySelector('#jpdy-button-right').addEventListener('click', function() {
+    tallyScore(true);
+    showAnswer();
+  });
+
+  querySelector('#jpdy-button-wrong').addEventListener('click', function() {
+    tallyScore(false);
+    showAnswer();
+  });
+
   authButton.addEventListener('click', function() {
     if (loggedIn) {
       fb.unauth();
@@ -221,12 +231,13 @@
       userResultsObject.answers[today][qIndex].answer = entry;
       fb.child('results').child(gameMonday).child(userId).set(userResultsObject);
     }
-    showAnswer(entry);
+    showAnswer();
   }
 
-  function showAnswer(entry) {
+  function showAnswer() {
     var status;
     var score;
+    var entry = userResultsObject.answers[today][qIndex].answer;
     var jpdyUserAnswer = querySelector('#jpdy-user-answer');
     var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
     var jpdyAnswer = querySelector('#jpdy-answer');
@@ -299,11 +310,13 @@
     var jpdyValue = querySelector('#jpdy-value');
     var jpdyDDWager = querySelector('#jpdy-dd-wager');
     var jpdyScore = querySelector('#jpdy-score');
+    var jpdyResultButtons = querySelector('#jpdy-result-buttons');
     var value = gameArray[today].questions[qIndex].value;
 
+    jpdyResultButtons.classList.add('jpdy-hide');
     answerObject = userResultsObject.answers[today][qIndex] || {};
-    answerObject.answer = entry;
-    scoreText = jpdyValue.textContent; // value === 'DD' ? jpdyDDWager.textContent : jpdyValue.textContent;
+    answerObject.answer = answerObject.answer || entry;
+    scoreText = jpdyValue.textContent;
     score = isCorrect ? parseInt(scoreText) : -parseInt(scoreText);
     answerObject.score = score;
     answerObject.status = LOCKED;
@@ -455,7 +468,7 @@
       wager = result.wager;
     } catch(e) {}
     if (result && (result.status === LOCKED || result.status === LIMBO)) {
-      showAnswer(result.answer);
+      showAnswer();
     } else {
       jpdyUserInput.value = null;
       hideAnswer();
