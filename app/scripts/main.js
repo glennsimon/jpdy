@@ -474,15 +474,19 @@
       val = 'DD';
     }
     jpdyCategory.textContent = gameArray[today].category;
-    try {
-      if (today !== 6) {
-        result = userResultsObject.answers[today][qIndex];
-      } else {
-        result = userResultsObject.answers[6];
-      }
-      wager = result.wager;
-    } catch(e) {}
-    if (result && (result.status === LOCKED || result.status === LIMBO)) {
+    if (today !== 6) {
+      result = userResultsObject.answers[today][qIndex] || {};
+      result.status = result.status || NEW;
+      result.score = result.score || 0;
+      userResultsObject.answers[today][qIndex] = result;
+    } else {
+      result = userResultsObject.answers[6];
+      result.status = result.status || NEW;
+      result.score = result.score || 0;
+      userResultsObject.answers[6] = result;
+    }
+    wager = result.wager;
+    if (result.status === LOCKED || result.status === LIMBO) {
       showAnswer();
     } else {
       jpdyUserInput.value = null;
