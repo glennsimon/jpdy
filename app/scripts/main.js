@@ -108,7 +108,6 @@
   // firebase vars
   var fb = new Firebase('https://jpdy.firebaseio.com');
   // elements in index.html
-  var categoryElement = querySelector('#category');
   var loginWindow = querySelector('#loginWindow');
   var googleLogin = querySelector('#googleLogin');
   var authButton = querySelector('#authButton');
@@ -344,18 +343,21 @@
   }
 
   function passQ() {
-    var entry;
+    var status;
     var answerObject;
     var jpdyUserInput = querySelector('#jpdy-user-input');
     var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
     var jpdyResultButtons = querySelector('#jpdy-result-buttons');
 
-    userResultsObject.answers[today][qIndex] = userResultsObject.answers[today][qIndex] || {};
-    userResultsObject.answers[today][qIndex].status = LOCKED;
-    userResultsObject.answers[today][qIndex].answer = 'passed';
-    userResultsObject.answers[today][qIndex].score = 0;
-    fb.child('results').child(gameMonday).child(userId).set(userResultsObject);
-    showAnswer();
+    status = userResultsObject.answers[today][qIndex].status;
+    if (status !== LOCKED && status !== LIMBO) {
+      userResultsObject.answers[today][qIndex] = userResultsObject.answers[today][qIndex] || {};
+      userResultsObject.answers[today][qIndex].status = LOCKED;
+      userResultsObject.answers[today][qIndex].answer = 'passed';
+      userResultsObject.answers[today][qIndex].score = 0;
+      fb.child('results').child(gameMonday).child(userId).set(userResultsObject);
+      showAnswer();
+    }
   }
 
   function nextQ() {
@@ -433,7 +435,7 @@
   /*** PLAY GAME ***/
 
   function play() {
-    if (!(userResultsObject && gameArray)) return; //gameInProgress) return;
+    if (!gameArray) return; // (userResultsObject && gameArray)) return;
     if (today === 6) {
       finalPlay();
       return;
@@ -464,13 +466,14 @@
     var jpdyValue = querySelector('#jpdy-value');
     var jpdyClue = querySelector('#jpdy-clue');
     var jpdyButtonPass = querySelector('#jpdy-button-pass');
+    var jpdyCategory = querySelector('#jpdy-category');
 
     if (today !== 6) {
       val = gameArray[today].questions[qIndex].value;
     } else {
       val = 'DD';
     }
-    categoryElement.textContent = gameArray[today].category;
+    jpdyCategory.textContent = gameArray[today].category;
     try {
       if (today !== 6) {
         result = userResultsObject.answers[today][qIndex];
@@ -589,9 +592,6 @@
         finalQs.push(qObject);
       }
     }
-    // while (finalQs.length > 3) {
-    //   finalQs.splice(Math.floor(Math.random() * finalQs.length), 1);
-    // }
     return finalQs;
   }
 

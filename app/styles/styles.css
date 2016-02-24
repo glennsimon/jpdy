@@ -52,10 +52,6 @@ html, body {
   width: 100%;
   bottom: 0;
 }
-.jpdy-category, .jpdy-clue {
-  align-items: center;
-  justify-content: center;
-}
 #jpdy-value-display {
   font-size: 34px;
   justify-content: center;
