@@ -344,7 +344,18 @@
   }
 
   function passQ() {
+    var entry;
+    var answerObject;
+    var jpdyUserInput = querySelector('#jpdy-user-input');
+    var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
+    var jpdyResultButtons = querySelector('#jpdy-result-buttons');
 
+    userResultsObject.answers[today][qIndex] = userResultsObject.answers[today][qIndex] || {};
+    userResultsObject.answers[today][qIndex].status = LOCKED;
+    userResultsObject.answers[today][qIndex].answer = 'passed';
+    userResultsObject.answers[today][qIndex].score = 0;
+    fb.child('results').child(gameMonday).child(userId).set(userResultsObject);
+    showAnswer();
   }
 
   function nextQ() {
@@ -452,6 +463,7 @@
     var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
     var jpdyValue = querySelector('#jpdy-value');
     var jpdyClue = querySelector('#jpdy-clue');
+    var jpdyButtonPass = querySelector('#jpdy-button-pass');
 
     if (today !== 6) {
       val = gameArray[today].questions[qIndex].value;
@@ -486,6 +498,7 @@
       jpdyClue.classList.add('mdl-color-text--deep-orange');
       jpdyUserInputDisplay.classList.add('jpdy-hide');
     }
+    wager ? jpdyButtonPass.classList.add('jpdy-hide') : jpdyButtonPass.classList.remove('jpdy-hide');
   }
 
   function finalPlay() {
@@ -576,10 +589,10 @@
         finalQs.push(qObject);
       }
     }
-    while (finalQs.length > 3) {
-      finalQs.splice(Math.floor(Math.random() * finalQs.length), 1);
-    }
-    return finalQs; // returnObject;
+    // while (finalQs.length > 3) {
+    //   finalQs.splice(Math.floor(Math.random() * finalQs.length), 1);
+    // }
+    return finalQs;
   }
 
   function saveGame() {
