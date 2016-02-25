@@ -1,0 +1,8 @@
+disable forward and back buttons until clue appears
+show spinner until clue appears
+display splash screen if no data
+add practice mode
+add ability to see others scores
+refresh screen periodically to prevent getting stuck on previous day
+refresh screen when drawer closes
+add read/write permissions to firebase
