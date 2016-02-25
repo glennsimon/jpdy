@@ -420,7 +420,9 @@
   function getQ() {
     var jpdyButtonPrev = querySelector('#jpdy-button-prev');
     var jpdyButtonNext = querySelector('#jpdy-button-next');
-    
+    var jpdySpinner = querySelector('#jpdy-spinner');
+
+    jpdySpinner.classList.add('is-active');    
     jpdyButtonPrev.disabled = true;
     jpdyButtonNext.disabled = true;
     if (todaysQs[qIndex]) {
@@ -447,6 +449,7 @@
     var jpdyButtonNext = querySelector('#jpdy-button-next');
     var jpdyButtonPass = querySelector('#jpdy-button-pass');
     var jpdyCategory = querySelector('#jpdy-category');
+    var jpdySpinner = querySelector('#jpdy-spinner');
 
     if (today !== 6) {
       val = gameArray[today].questions[qIndex].value;
@@ -485,6 +488,7 @@
       jpdyClue.classList.add('mdl-color-text--deep-orange');
       jpdyUserInputDisplay.classList.add('jpdy-hide');
     }
+    jpdySpinner.classList.remove('is-active');
     jpdyButtonPass.disabled =  wager ? true : false;
     if (qIndex !== gameArray[today].questions.length - 1) {
       jpdyButtonNext.disabled = false;
@@ -594,7 +598,7 @@
 
   fb.child('.info/connected').on('value', function(snap) {
     connected = snap.val();
-    setOnlineStatus();
+    // setOnlineStatus();
   });
 
   fb.onAuth(function(authData) {
@@ -650,10 +654,10 @@
       // add this device to the users connections list
       connection = fb.child('people').child(userId).child('online').push(true);
       connection.onDisconnect().remove();
-      getGameStatus();
     } else if (connection) {
       connection.remove();
     }
+    getGameStatus();
   }
 
   function getGameStatus() {
