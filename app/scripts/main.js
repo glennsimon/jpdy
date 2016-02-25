@@ -138,6 +138,12 @@
       initWeek();
     }
   });
+  setTimeout(refreshPage, 3600000);
+
+  function refreshPage() {
+    window.location.reload();
+    setTimeout(refreshPage, 3600000);
+  }
 
   /* ** ADD LISTENERS ** */
 
