@@ -91,6 +91,9 @@
   var NEW = 'new';
   var LIMBO = 'limbo';
   var LOCKED = 'locked';
+  var NUM_J_CATS = 14209;
+  var NUM_DJ_CATS = 13631;
+  var NUM_FJ_CATS = 3593;
   // initially undefined vars
   var now;
   var today;
@@ -138,6 +141,7 @@
       initWeek();
     }
   });
+  location.hash = '#jpdy-game';
   setTimeout(refreshPage, 3600000);
 
   function refreshPage() {
@@ -146,6 +150,8 @@
   }
 
   /* ** ADD LISTENERS ** */
+
+  window.addEventListener("hashchange", navigate);
 
   // Enter an entry to start turn or add to current turn *
   querySelector('#jpdy-user-input').addEventListener('keyup', function(e) {
@@ -216,6 +222,66 @@
         console.log(authData);
       }
     });
+  }
+
+  function navigate() { // e) {
+    // var identifier;
+    var navButtons = [
+      querySelector('#jpdy-game'), querySelector('#jpdy-scores'),
+      querySelector('#jpdy-prev-games'), querySelector('#jpdy-practice')
+    ];
+
+    if (location.hash === '#jpdy-scores') {
+      compareScores();      
+    } else if (location.hash === '#jpdy-prev-games') {
+      getPrevGames();
+    } else if (location.hash === '#jpdy-practice') {
+      practice();
+    }
+    navButtons.forEach(function(obj) {
+      if (location.hash === '#' + obj.id) {
+        obj.classList.remove('jpdy-hide');
+      } else {
+        obj.classList.add('jpdy-hide');
+      }
+    });
+  }
+
+  function compareScores() {
+    var uid, score, name, tdName, tdScore, tr, tbody;
+    var fbUser = fb.child('people');
+    var jpdyScoreTable = querySelector('#jpdy-score-table');
+
+    tbody = querySelector('#jpdy-score-table tbody');
+    while (tbody) {
+      jpdyScoreTable.removeChild(tbody);
+      tbody = querySelector('#jpdy-score-table tbody');
+    }
+    fbUser.once('value', function(snapshot) {
+      snapshot.forEach(function(childSnapshot) {
+        uid = childSnapshot.key();
+        score = gameResultsObject[uid].totalScore;
+        name = childSnapshot.val().userName;
+        tdName = document.createElement('td');
+        tdName.appendChild(document.createTextNode(name));
+        tdScore = document.createElement('td');
+        tdScore.appendChild(document.createTextNode(score));
+        tr = document.createElement('tr');
+        tr.appendChild(tdName);
+        tr.appendChild(tdScore);
+        tbody = document.createElement('tbody');
+        tbody.appendChild(tr);
+        jpdyScoreTable.appendChild(tbody);
+      });
+    });
+  }
+
+  function getPrevGames() {
+
+  }
+
+  function practice() {
+
   }
 
   function enterAnswer() {
@@ -522,15 +588,11 @@
 
   function initWeek() {
     var i;
-    var numCats;
     var catNum;
 
     dayIndex = 0;
-    fb.child('fj_categories').child('number').once('value', function(snapshot) {
-      numCats = snapshot.val();
-      catNum = Math.floor(Math.random() * numCats);
-      setFinal(catNum);
-    });
+    catNum = Math.floor(Math.random() * NUM_FJ_CATS);
+    setFinal(catNum);
   }
 
   function setFinal(catNum) {
@@ -547,14 +609,7 @@
   }
 
   function setupRound() {
-    var round;
-    var numCats;
-      
-    round = dayIndex < 3 ? 'j_categories' : 'dj_categories';
-    fb.child(round).child('number').once('value', function(snapshot) {
-      numCats = snapshot.val();
-      prepGameData(round, numCats);
-    });
+    dayIndex < 3 ? prepGameData('j_categories', NUM_J_CATS) : prepGameData('dj_categories', NUM_DJ_CATS);
   }
 
   function prepGameData(round, numCats) {
