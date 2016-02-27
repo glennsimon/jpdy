@@ -4,3 +4,4 @@ add ability to see others scores
 add read/write permissions to firebase
 hide name and meme when user logs off
 use constants for count of categories
+negative score entering final is disqualified

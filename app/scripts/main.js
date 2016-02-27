@@ -151,7 +151,9 @@
 
   /* ** ADD LISTENERS ** */
 
-  window.addEventListener("hashchange", navigate);
+  window.addEventListener('hashchange', navigate);
+
+  querySelector('.jpdy-drawer').addEventListener('click', closeDrawer);
 
   // Enter an entry to start turn or add to current turn *
   querySelector('#jpdy-user-input').addEventListener('keyup', function(e) {
@@ -231,7 +233,9 @@
       querySelector('#jpdy-prev-games'), querySelector('#jpdy-practice')
     ];
 
-    if (location.hash === '#jpdy-scores') {
+    if (location.hash === '#jpdy-game') {
+      closeDrawer();      
+    } else if (location.hash === '#jpdy-scores') {
       compareScores();      
     } else if (location.hash === '#jpdy-prev-games') {
       getPrevGames();
@@ -282,6 +286,11 @@
 
   function practice() {
 
+  }
+
+  function closeDrawer() {
+    querySelector('.mdl-layout__drawer').classList.remove('is-visible');
+    querySelector('.mdl-layout__obfuscator').classList.remove('is-visible');
   }
 
   function enterAnswer() {
