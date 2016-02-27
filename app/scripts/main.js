@@ -226,7 +226,7 @@
     var jpdyResultButtons = querySelector('#jpdy-result-buttons');
 
     entry = jpdyUserInput.value;
-    if (entry.toLowerCase() === todaysQs[qIndex].a.toLowerCase()) {
+    if (entry.toLowerCase().trim() === todaysQs[qIndex].a.toLowerCase().trim()) {
       jpdyResultFeedback.classList.remove('jpdy-hide');
       tallyScore(true, entry);
     } else {
