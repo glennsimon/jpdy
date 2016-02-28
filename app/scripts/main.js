@@ -288,8 +288,8 @@
     var drawer = querySelector('.mdl-layout__drawer');
     var obfuscator = querySelector('.mdl-layout__obfuscator');
 
-    if (drawer) drawer.classList.remove('is-visible');
-    if (obfuscator) obfuscator.classList.remove('is-visible');
+    if (drawer) {drawer.classList.remove('is-visible');}
+    if (obfuscator) {obfuscator.classList.remove('is-visible');}
   }
 
   function enterAnswer() {
