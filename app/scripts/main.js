@@ -153,8 +153,6 @@
 
   window.addEventListener('hashchange', navigate);
 
-  querySelector('.jpdy-drawer').addEventListener('click', closeDrawer);
-
   // Enter an entry to start turn or add to current turn *
   querySelector('#jpdy-user-input').addEventListener('keyup', function(e) {
     if (e.keyCode === 13) {
@@ -220,14 +218,11 @@
             console.log('Auth failure with error: ' + error);
           });
         }
-      } else if (authData) {
-        console.log(authData);
       }
     });
   }
 
-  function navigate() { // e) {
-    // var identifier;
+  function navigate() {
     var navButtons = [
       querySelector('#jpdy-game'), querySelector('#jpdy-scores'),
       querySelector('#jpdy-prev-games'), querySelector('#jpdy-practice')
@@ -277,20 +272,24 @@
         tbody.appendChild(tr);
         jpdyScoreTable.appendChild(tbody);
       });
+      closeDrawer();
     });
   }
 
   function getPrevGames() {
-
+    closeDrawer();
   }
 
   function practice() {
-
+    closerDrawer();
   }
 
   function closeDrawer() {
-    querySelector('.mdl-layout__drawer').classList.remove('is-visible');
-    querySelector('.mdl-layout__obfuscator').classList.remove('is-visible');
+    var drawer = querySelector('.mdl-layout__drawer');
+    var obfuscator = querySelector('.mdl-layout__obfuscator');
+
+    if (drawer) drawer.classList.remove('is-visible');
+    if (obfuscator) obfuscator.classList.remove('is-visible');
   }
 
   function enterAnswer() {
@@ -668,7 +667,6 @@
 
   fb.child('.info/connected').on('value', function(snap) {
     connected = snap.val();
-    // setOnlineStatus();
   });
 
   fb.onAuth(function(authData) {
@@ -698,8 +696,10 @@
       profilePic.setAttribute('src', authData.google.profileImageURL);
       profilePic.style.display = 'block';
     } else {
+      profileName.textContent = '';
       profilePic.style.display = 'none';
     }
+    closeDrawer();
   }
 
   function recordAuth(authData) {
