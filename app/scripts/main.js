@@ -290,7 +290,8 @@
       snapshot.forEach(function(childSnapshot) {
         uid = childSnapshot.key();
         if (gameResultsObject[uid]) {
-          score = gameResultsObject[uid].totalScore;
+          score = uid === userId ? userResultsObject.totalScore :
+              gameResultsObject[uid].totalScore;
           name = childSnapshot.val().userName.split(' ')[0];
           tdName = document.createElement('td');
           tdName.appendChild(document.createTextNode(name));

@@ -3,3 +3,5 @@ add practice mode
 add read/write permissions to firebase
 add previous week results history
 don't show final jeopardy score until next day in previous game scores
+update scores to latest when showing scores (another firebase round trip)
+change to MVC framework
