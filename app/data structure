@@ -51,7 +51,8 @@
 							"status": String ["new" | "limbo" | "locked"],
 							"answer": String,
 							"wager": Number,  // DD ONLY!!
-							"score": Number
+							"score": Number,
+							"result": String ["right" | "wrong" | "pass"]
 						},
 						"1": {...},
 						...
@@ -62,7 +63,8 @@
 						"status": String ["new" | "limbo" | "locked"],
 						"answer": String,
 						"wager": Number,
-						"score": Number
+						"score": Number,
+						"result": String ["right" | "wrong" | "pass"]
 					}
 				}
 			},
