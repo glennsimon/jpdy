@@ -274,7 +274,7 @@
         uid = childSnapshot.key();
         if (gameResultsObject[uid]) {
           score = gameResultsObject[uid].totalScore;
-          name = childSnapshot.val().userName;
+          name = childSnapshot.val().userName.split(' ')[0];
           tdName = document.createElement('td');
           tdName.appendChild(document.createTextNode(name));
           tdScore = document.createElement('td');
@@ -585,6 +585,9 @@
       result = userResultsObject.answers[6] || {};
       result.status = result.status || NEW;
       result.score = result.score || 0;
+      if (userResultsObject.totalScore && userResultsObject.totalScore < 0) {
+        result.wager = 0;
+      }
       userResultsObject.answers[6] = result;
     } else {
       result = userResultsObject.answers[today][qIndex] || {};

@@ -17,6 +17,9 @@
 html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
 }
+.mdl-data-table td:first-of-type, .mdl-data-table th:first-of-type {
+  text-align: left;
+}
 #loginWindow {
   position: fixed;
   display: none;
@@ -40,6 +43,9 @@ html, body {
   right: 0;
   align-items: center;
   justify-content: center;
+}
+#jpdy-score-table {
+  min-width: 250px;
 }
 #jpdy-spinner {
   position: absolute;
