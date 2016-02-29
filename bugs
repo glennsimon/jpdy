@@ -2,3 +2,4 @@ display splash screen if no data connection
 add practice mode
 add read/write permissions to firebase
 add previous week results history
+don't show final jeopardy score until next day in previous game scores

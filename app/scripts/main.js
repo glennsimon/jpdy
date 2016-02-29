@@ -117,6 +117,23 @@
   var loginWindow = querySelector('#loginWindow');
   var googleLogin = querySelector('#googleLogin');
   var authButton = querySelector('#authButton');
+  var jpdyUserInput = querySelector('#jpdy-user-input');
+  var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
+  var jpdyResultButtons = querySelector('#jpdy-result-buttons');
+  var jpdyUserAnswer = querySelector('#jpdy-user-answer');
+  var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
+  var jpdyAnswer = querySelector('#jpdy-answer');
+  var jpdyResult = querySelector('#jpdy-result');
+  var jpdyValue = querySelector('#jpdy-value');
+  var jpdyScore = querySelector('#jpdy-score');
+  var jpdyDDWager = querySelector('#jpdy-dd-wager');
+  var jpdyValueDisplay = querySelector('#jpdy-value-display');
+  var jpdyButtonPrev = querySelector('#jpdy-button-prev');
+  var jpdyDDValue = querySelector('#jpdy-dd-value');
+  var jpdyClue = querySelector('#jpdy-clue');
+  var jpdyButtonNext = querySelector('#jpdy-button-next');
+  var jpdySpinner = querySelector('#jpdy-spinner');
+  var jpdyButtonPass = querySelector('#jpdy-button-pass');
   // general initialized vars
   var loggedIn = false;
   var todaysQs = [];
@@ -161,35 +178,35 @@
   window.addEventListener('hashchange', navigate);
 
   // Enter an entry to start turn or add to current turn *
-  querySelector('#jpdy-user-input').addEventListener('keyup', function(e) {
+  jpdyUserInput.addEventListener('keyup', function(e) {
     if (e.keyCode === 13) {
       enterAnswer();
     }
   });
 
-  querySelector('#jpdy-user-input').addEventListener('focus', function() {
+  jpdyUserInput.addEventListener('focus', function() {
     if (!loggedIn) {
       loginWindow.style.display = 'flex';
     }
   });
 
-  querySelector('#jpdy-dd-wager').addEventListener('keyup', function(e) {
+  jpdyDDWager.addEventListener('keyup', function(e) {
     if (e.keyCode === 13) {
       enterWager();
     }
   });
 
-  querySelector('#jpdy-dd-wager').addEventListener('focus', function() {
+  jpdyDDWager.addEventListener('focus', function() {
     if (!loggedIn) {
       loginWindow.style.display = 'flex';
     }
   });
 
-  querySelector('#jpdy-button-prev').addEventListener('click', prevQ);
+  jpdyButtonPrev.addEventListener('click', prevQ);
 
-  querySelector('#jpdy-button-pass').addEventListener('click', passQ);
+  jpdyButtonPass.addEventListener('click', passQ);
 
-  querySelector('#jpdy-button-next').addEventListener('click', nextQ);
+  jpdyButtonNext.addEventListener('click', nextQ);
 
   querySelector('#jpdy-button-right').addEventListener('click', function() {
     tallyScore(true);
@@ -315,9 +332,6 @@
     var entry;
     var answer;
     var answerObject;
-    var jpdyUserInput = querySelector('#jpdy-user-input');
-    var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
-    var jpdyResultButtons = querySelector('#jpdy-result-buttons');
 
     entry = jpdyUserInput.value;
     answer = todaysQs[qIndex].a;
@@ -345,12 +359,6 @@
     var status;
     var result;
     var entry;
-    var jpdyUserAnswer = querySelector('#jpdy-user-answer');
-    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
-    var jpdyAnswer = querySelector('#jpdy-answer');
-    var jpdyResult = querySelector('#jpdy-result');
-    var jpdyResultButtons = querySelector('#jpdy-result-buttons');
-    var jpdyResultFeedback = querySelector('#jpdy-result-feedback');
     var jpdyResultSymbol = querySelector('#jpdy-result-symbol');
     var jpdyResultText = querySelector('#jpdy-result-text');
 
@@ -401,11 +409,6 @@
   }
 
   function hideAnswer() {
-    var jpdyUserAnswer = querySelector('#jpdy-user-answer');
-    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
-    var jpdyAnswer = querySelector('#jpdy-answer');
-    var jpdyResult = querySelector('#jpdy-result');
-
     jpdyUserInputDisplay.classList.remove('jpdy-hide');
     jpdyUserAnswer.textContent = 'your answer';
     jpdyAnswer.classList.add('jpdy-hide');
@@ -419,9 +422,6 @@
     var scoreText;
     var totalScore;
     var answerObject;
-    var jpdyValue = querySelector('#jpdy-value');
-    var jpdyScore = querySelector('#jpdy-score');
-    var jpdyResultButtons = querySelector('#jpdy-result-buttons');
 
     jpdyResultButtons.classList.add('jpdy-hide');
     if (today === 6) {
@@ -474,12 +474,6 @@
   function enterWager() {
     var wager;
     var totalScore;
-    var jpdyDDWager = querySelector('#jpdy-dd-wager');
-    var jpdyValue = querySelector('#jpdy-value');
-    var jpdyValueDisplay = querySelector('#jpdy-value-display');
-    var jpdyDDValue = querySelector('#jpdy-dd-value');
-    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
-    var jpdyClue = querySelector('#jpdy-clue');
 
     wager = parseInt(jpdyDDWager.value, 10);
     totalScore = userResultsObject.totalScore;
@@ -543,9 +537,6 @@
 
   function getQ() {
     var question;
-    var jpdyButtonPrev = querySelector('#jpdy-button-prev');
-    var jpdyButtonNext = querySelector('#jpdy-button-next');
-    var jpdySpinner = querySelector('#jpdy-spinner');
 
     jpdySpinner.classList.add('is-active');
     jpdyButtonPrev.disabled = true;
@@ -562,22 +553,27 @@
     });
   }
 
+  function finalPlay() {
+    var jpdyNavigateButtons = querySelector('#jpdy-navigate-buttons');
+
+    jpdyNavigateButtons.classList.add('jpdy-hide');
+    if (todaysQs[qIndex]) {
+      updateDisplay();
+      return;
+    }
+    fb.child('questions').child(gameArray[6].question).once('value',
+      function(snapshot) {
+        todaysQs[qIndex] = snapshot.val();
+        updateDisplay();
+      });
+  }
+
   function updateDisplay() {
     var val;
     var wager;
     var result;
     var questions;
-    var jpdyDDValue = querySelector('#jpdy-dd-value');
-    var jpdyValueDisplay = querySelector('#jpdy-value-display');
-    var jpdyUserInput = querySelector('#jpdy-user-input');
-    var jpdyUserInputDisplay = querySelector('#jpdy-user-input-display');
-    var jpdyValue = querySelector('#jpdy-value');
-    var jpdyClue = querySelector('#jpdy-clue');
-    var jpdyButtonPrev = querySelector('#jpdy-button-prev');
-    var jpdyButtonNext = querySelector('#jpdy-button-next');
-    var jpdyButtonPass = querySelector('#jpdy-button-pass');
     var jpdyCategory = querySelector('#jpdy-category');
-    var jpdySpinner = querySelector('#jpdy-spinner');
 
     val = today === 6 ? 'DD' : gameArray[today].questions[qIndex].value;
     jpdyCategory.textContent = gameArray[today].category;
@@ -627,21 +623,6 @@
     if (qIndex !== 0) {
       jpdyButtonPrev.disabled = false;
     }
-  }
-
-  function finalPlay() {
-    var jpdyNavigateButtons = querySelector('#jpdy-navigate-buttons');
-
-    jpdyNavigateButtons.classList.add('jpdy-hide');
-    if (todaysQs[qIndex]) {
-      updateDisplay();
-      return;
-    }
-    fb.child('questions').child(gameArray[6].question).once('value',
-      function(snapshot) {
-        todaysQs[qIndex] = snapshot.val();
-        updateDisplay();
-      });
   }
 
   /* ** SET UP GAME FOR WEEK ** */
@@ -791,8 +772,6 @@
   }
 
   function getGameStatus() {
-    var jpdyScore = querySelector('#jpdy-score');
-
     fb.child('results').child(gameMonday).once('value', function(snapshot) {
       gameResultsObject = snapshot.val();
       if (gameResultsObject) {
