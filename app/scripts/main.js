@@ -223,6 +223,7 @@
       fb.unauth();
     } else {
       loginWindow.style.display = 'flex';
+      closeDrawer();
     }
   });
 
