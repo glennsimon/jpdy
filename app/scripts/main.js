@@ -543,14 +543,14 @@
     jpdyButtonPrev.disabled = true;
     jpdyButtonNext.disabled = true;
     if (todaysQs[qIndex]) {
-      updateDisplay();
+      prepForDisplay();
       return;
     }
     question = today === 6 ?
         gameArray[6].question : gameArray[today].questions[qIndex].question;
     fb.child('questions').child(question).once('value', function(snapshot) {
       todaysQs[qIndex] = snapshot.val();
-      updateDisplay();
+      prepForDisplay();
     });
   }
 
@@ -559,25 +559,22 @@
 
     jpdyNavigateButtons.classList.add('jpdy-hide');
     if (todaysQs[qIndex]) {
-      updateDisplay();
+      prepForDisplay();
       return;
     }
     fb.child('questions').child(gameArray[6].question).once('value',
       function(snapshot) {
         todaysQs[qIndex] = snapshot.val();
-        updateDisplay();
+        prepForDisplay();
       });
   }
 
-  function updateDisplay() {
-    var val;
+  function prepForDisplay() {
+    var value;
     var wager;
     var result;
-    var questions;
-    var jpdyCategory = querySelector('#jpdy-category');
 
-    val = today === 6 ? 'DD' : gameArray[today].questions[qIndex].value;
-    jpdyCategory.textContent = gameArray[today].category;
+    value = today === 6 ? 'DD' : gameArray[today].questions[qIndex].value;
     if (today === 6) {
       result = userResultsObject.answers[6] || {};
       result.status = result.status || NEW;
@@ -592,6 +589,16 @@
       result.score = result.score || 0;
       userResultsObject.answers[today][qIndex] = result;
     }
+    updateDisplay(result, value);
+  }
+
+  function updateDisplay(result, value) {
+    var wager;
+    var result;
+    var questions;
+    var jpdyCategory = querySelector('#jpdy-category');
+
+    jpdyCategory.textContent = gameArray[today].category;
     wager = result.wager;
     if (result.status === LOCKED || result.status === LIMBO) {
       showAnswer();
@@ -599,11 +606,11 @@
       jpdyUserInput.value = null;
       hideAnswer();
     }
-    if (val !== 'DD' || wager || wager === 0) {
+    if (value !== 'DD' || wager || wager === 0) {
       if (wager === 0) {
         wager = '0';
       }
-      jpdyValue.textContent = wager || val.slice(1);
+      jpdyValue.textContent = wager || value.slice(1);
       jpdyValueDisplay.classList.remove('jpdy-hide');
       jpdyDDValue.classList.add('jpdy-hide');
       jpdyClue.textContent = todaysQs[qIndex].q;
