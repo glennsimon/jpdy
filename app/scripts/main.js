@@ -110,6 +110,7 @@
   var userId;
   var connected;
   var qIndex;
+  var practiceQ;
   // firebase vars
   var fb = new Firebase('https://jpdy.firebaseio.com');
   var fbUserResults;
@@ -143,13 +144,7 @@
 
   now = new Date();
   today = now.getDay() > 0 ? now.getDay() - 1 : 6;
-  if (today < 3) {
-    querySelector('#jpdy-round').textContent = 'first';
-  } else if (today < 6) {
-    querySelector('#jpdy-round').textContent = 'second';
-  } else {
-    querySelector('#jpdy-round').textContent = 'final';
-  }
+  setRound();
   weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
   gameMonday = String(weekStart.getDate());
   gameMonday = gameMonday.length === 1 ? '0' + gameMonday : gameMonday;
@@ -210,16 +205,15 @@
   jpdyButtonNext.addEventListener('click', nextQ);
 
   querySelector('#jpdy-button-right').addEventListener('click', function() {
-    tallyScore(true);
-    showAnswer();
+    showResultSymbol(true);
   });
 
   querySelector('#jpdy-button-wrong').addEventListener('click', function() {
-    tallyScore(false);
-    showAnswer();
+    showResultSymbol(false);
   });
 
   querySelector('#jpdy-button-practice').addEventListener('click', function() {
+    jpdyResultFeedback.classList.add('jpdy-hide');
     practice();
   });
 
@@ -258,12 +252,15 @@
     var jpdyPrevGames = querySelector('#jpdy-prev-games');
     var jpdyPracticeNav = querySelector('#jpdy-practice-nav');
 
+    jpdyResultFeedback.classList.add('jpdy-hide');
     if (location.hash === '#jpdy-game') {
       jpdyGame.classList.remove('jpdy-hide');
       jpdyNavigateButtons.classList.remove('jpdy-hide');
       jpdyScores.classList.add('jpdy-hide');
       jpdyPrevGames.classList.add('jpdy-hide');
       jpdyPracticeNav.classList.add('jpdy-hide');
+      setRound();
+      play();
       closeDrawer();
     } else if (location.hash === '#jpdy-scores') {
       jpdyGame.classList.add('jpdy-hide');
@@ -276,15 +273,16 @@
       getPrevGames();
       jpdyGame.classList.add('jpdy-hide');
       jpdyNavigateButtons.classList.add('jpdy-hide');
-      jpdyScores.classList.remove('jpdy-hide');
-      jpdyPrevGames.classList.add('jpdy-hide');
-      jpdyPracticeNav.classList.remove('jpdy-hide');
+      jpdyScores.classList.add('jpdy-hide');
+      jpdyPrevGames.classList.remove('jpdy-hide');
+      jpdyPracticeNav.classList.add('jpdy-hide');
     } else if (location.hash === '#jpdy-practice-nav') {
       jpdyGame.classList.remove('jpdy-hide');
       jpdyNavigateButtons.classList.add('jpdy-hide');
       jpdyScores.classList.add('jpdy-hide');
       jpdyPrevGames.classList.add('jpdy-hide');
       jpdyPracticeNav.classList.remove('jpdy-hide');
+      querySelector('#jpdy-round').textContent = 'practice';
       practice();
     }
   }
@@ -313,7 +311,7 @@
           score = uid === userId ? userResultsObject.totalScore :
               gameResultsObject[uid].totalScore;
           userName = childSnapshot.val().userName;
-          name = userName ? childSnapshot.val().userName.split(' ')[0] : 'anonymous';
+          name = userName ? userName.split(' ')[0] : 'anonymous';
           tdName = document.createElement('td');
           tdName.appendChild(document.createTextNode(name));
           tdScore = document.createElement('td');
@@ -342,7 +340,6 @@
     var catObject;
     var keys;
     var keyIndex;
-    var question;
     var numKeys = 0;
     var category;
     var result;
@@ -351,9 +348,11 @@
     round = ['j_categories', 'dj_categories', 'fj_categories'][roundIndex];
     fb.child(round).child('number').once('value', function(snapshot) {
       var number = snapshot.val();
+
       catNum = Math.floor(Math.random() * number);
       fb.child(round).child(catNum).once('value', function(catSnapshot) {
         var value;
+
         catObject = catSnapshot.val();
         category = catObject.category;
         if (round === 'fj_categories') {
@@ -369,13 +368,14 @@
           keyIndex = Math.floor(Math.random() * numKeys);
           qNum = keys[keyIndex];
           value = catObject.questions[qNum];
+          value = value === 'DD' ? '$1000' : value;
         }
         fb.child('questions').child(qNum).once('value', function(qSnapshot) {
-          question = qSnapshot.val();
+          practiceQ = qSnapshot.val();
           result = {};
           result.status = NEW;
           result.score = 0;
-          updateDisplay(category, question.q, result, value);
+          updateDisplay(category, practiceQ.q, result, value);
         });
       });
     });
@@ -400,6 +400,17 @@
     var answerObject;
 
     entry = jpdyUserInput.value;
+    if (location.hash === '#jpdy-practice-nav') {
+      answer = practiceQ.a;
+      if (entry.toLowerCase().trim() === answer.toLowerCase().trim()) {
+        jpdyResultFeedback.classList.remove('jpdy-hide');
+        displayResultFeedback(RIGHT);
+      } else {
+        jpdyResultButtons.classList.remove('jpdy-hide');
+      }
+      showAnswer(entry);
+      return;
+    }
     answer = todaysQs[qIndex].a;
     answerObject = today === 6 ? userResultsObject.answers[6] :
         userResultsObject.answers[today][qIndex];
@@ -421,13 +432,20 @@
     showAnswer();
   }
 
-  function showAnswer() {
+  function showAnswer(userEntry) {
     var status;
     var result;
     var entry;
-    var jpdyResultSymbol = querySelector('#jpdy-result-symbol');
-    var jpdyResultText = querySelector('#jpdy-result-text');
 
+    if (location.hash === '#jpdy-practice-nav') {
+      jpdyUserInputDisplay.classList.add('jpdy-hide');
+      jpdyUserAnswer.textContent = 'your answer: ' + userEntry;
+      jpdyAnswer.classList.remove('jpdy-hide');
+      jpdyAnswer.textContent = 'correct answer: ' + practiceQ.a;
+      jpdyUserAnswer.classList.remove('jpdy-hide');
+      jpdyResult.classList.remove('jpdy-hide');
+      return;
+    }
     if (today === 6) {
       entry = userResultsObject.answers[6].answer;
     } else {
@@ -454,6 +472,13 @@
     } else {
       result = userResultsObject.answers[today][qIndex].result;
     }
+    displayResultFeedback(result);
+  }
+
+  function displayResultFeedback(result) {
+    var jpdyResultText = querySelector('#jpdy-result-text');
+    var jpdyResultSymbol = querySelector('#jpdy-result-symbol');
+
     jpdyResultButtons.classList.add('jpdy-hide');
     jpdyResultFeedback.classList.remove('jpdy-hide');
     if (result === WRONG) {
@@ -542,6 +567,10 @@
     var totalScore;
 
     wager = parseInt(jpdyDDWager.value, 10);
+    if (location.hash === '#jpdy-practice-nav') {
+      wagerDisplay(wager, practiceQ);
+      return;
+    }
     totalScore = userResultsObject.totalScore;
     if (wager < 0) {
       alert('Negative wagers are not allowed!');
@@ -578,16 +607,42 @@
       userResultsObject.answers[today][qIndex].wager = wager;
       userResultsObject.answers[today][qIndex].status = NEW;
     }
-    jpdyValue.textContent = wager;
-    jpdyValueDisplay.classList.remove('jpdy-hide');
-    jpdyDDValue.classList.add('jpdy-hide');
-    jpdyClue.textContent = todaysQs[qIndex].q;
-    jpdyClue.classList.remove('mdl-color-text--deep-orange');
-    jpdyUserInputDisplay.classList.remove('jpdy-hide');
+    wagerDisplay(wager, todaysQs[qIndex].q);
     fbUserResults.set(userResultsObject);
   }
 
+  function wagerDisplay(wager, question) {
+    jpdyValue.textContent = wager;
+    jpdyValueDisplay.classList.remove('jpdy-hide');
+    jpdyDDValue.classList.add('jpdy-hide');
+    jpdyClue.textContent = question;
+    jpdyClue.classList.remove('mdl-color-text--deep-orange');
+    jpdyUserInputDisplay.classList.remove('jpdy-hide');
+  }
+
+  function showResultSymbol(isCorrect) {
+    var result;
+
+    if (location.hash !== '#jpdy-practice-nav') {
+      tallyScore(isCorrect);
+    }
+    jpdyResultFeedback.classList.remove('jpdy-hide');
+    jpdyResultButtons.classList.add('jpdy-hide');
+    result = isCorrect ? RIGHT : WRONG;
+    displayResultFeedback(result);
+  }
+
   /* ** PLAY GAME ** */
+
+  function setRound() {
+    if (today < 3) {
+    querySelector('#jpdy-round').textContent = 'first';
+    } else if (today < 6) {
+      querySelector('#jpdy-round').textContent = 'second';
+    } else {
+      querySelector('#jpdy-round').textContent = 'final';
+    }
+  }
 
   function play() {
     if (!gameArray) {
