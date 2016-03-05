@@ -228,6 +228,7 @@
       fb.unauth();
     } else {
       loginWindow.style.display = 'flex';
+      closeDrawer();
     }
   });
 
@@ -290,6 +291,7 @@
 
   function compareScores() {
     var uid;
+    var userName;
     var score;
     var name;
     var tdName;
@@ -310,7 +312,8 @@
         if (gameResultsObject[uid]) {
           score = uid === userId ? userResultsObject.totalScore :
               gameResultsObject[uid].totalScore;
-          name = childSnapshot.val().userName.split(' ')[0];
+          userName = childSnapshot.val().userName;
+          name = userName ? childSnapshot.val().userName.split(' ')[0] : 'anonymous';
           tdName = document.createElement('td');
           tdName.appendChild(document.createTextNode(name));
           tdScore = document.createElement('td');
