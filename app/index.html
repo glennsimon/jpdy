@@ -78,7 +78,7 @@
           <a class="mdl-navigation__link" href="#jpdy-game"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">home</i>Home</a>
           <a class="mdl-navigation__link" href="#jpdy-scores"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">group</i>Player Scores</a>
           <a class="mdl-navigation__link" href="#jpdy-prev-games"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">list</i>Past Games</a>
-          <a class="mdl-navigation__link" href="#jpdy-practice"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">refresh</i>Practice</a>
+          <a class="mdl-navigation__link" href="#jpdy-practice-nav"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">refresh</i>Practice</a>
           <div class="mdl-layout-spacer"></div>
         </nav>
       </div>
@@ -146,6 +146,13 @@
                 ?
               </div>
             </div>
+            <div id="jpdy-practice-nav" class="mdl-grid mdl-cell--12-col jpdy-hide">
+              <div class="mdl-layout-spacer"></div>
+              <button id="jpdy-button-practice" class="mdl-button mdl-js-button mdl-js-ripple-effect">
+                next
+              </button>
+              <div class="mdl-layout-spacer"></div>
+            </div>
             <div id="jpdy-navigate-buttons" class="mdl-grid mdl-cell--12-col">
               <button id="jpdy-button-prev" class="mdl-button mdl-js-button mdl-js-ripple-effect" disabled>
                 <i class="material-icons">arrow_back</i>            
@@ -181,9 +188,6 @@
           </table>
         </div>
         <div id="jpdy-prev-games" class="mdl-grid mdl-cell--12-col jpdy-hide">
-          
-        </div>
-        <div id="jpdy-practice" class="mdl-grid mdl-cell--12-col jpdy-hide">
           
         </div>
       </main>

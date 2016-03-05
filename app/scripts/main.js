@@ -134,6 +134,7 @@
   var jpdyButtonNext = querySelector('#jpdy-button-next');
   var jpdySpinner = querySelector('#jpdy-spinner');
   var jpdyButtonPass = querySelector('#jpdy-button-pass');
+  var jpdyNavigateButtons = querySelector('#jpdy-navigate-buttons');
   // general initialized vars
   var loggedIn = false;
   var todaysQs = [];
@@ -218,6 +219,10 @@
     showAnswer();
   });
 
+  querySelector('#jpdy-button-practice').addEventListener('click', function() {
+    practice();
+  });
+
   authButton.addEventListener('click', function() {
     if (loggedIn) {
       fb.unauth();
@@ -247,27 +252,40 @@
   }
 
   function navigate() {
-    var navButtons = [
-      querySelector('#jpdy-game'), querySelector('#jpdy-scores'),
-      querySelector('#jpdy-prev-games'), querySelector('#jpdy-practice')
-    ];
+    var jpdyGame = querySelector('#jpdy-game');
+    var jpdyScores = querySelector('#jpdy-scores');
+    var jpdyPrevGames = querySelector('#jpdy-prev-games');
+    var jpdyPracticeNav = querySelector('#jpdy-practice-nav');
 
     if (location.hash === '#jpdy-game') {
+      jpdyGame.classList.remove('jpdy-hide');
+      jpdyNavigateButtons.classList.remove('jpdy-hide');
+      jpdyScores.classList.add('jpdy-hide');
+      jpdyPrevGames.classList.add('jpdy-hide');
+      jpdyPracticeNav.classList.add('jpdy-hide');
       closeDrawer();
     } else if (location.hash === '#jpdy-scores') {
+      jpdyGame.classList.add('jpdy-hide');
+      jpdyNavigateButtons.classList.add('jpdy-hide');
+      jpdyScores.classList.remove('jpdy-hide');
+      jpdyPrevGames.classList.add('jpdy-hide');
+      jpdyPracticeNav.classList.add('jpdy-hide');
       compareScores();
     } else if (location.hash === '#jpdy-prev-games') {
       getPrevGames();
-    } else if (location.hash === '#jpdy-practice') {
+      jpdyGame.classList.add('jpdy-hide');
+      jpdyNavigateButtons.classList.add('jpdy-hide');
+      jpdyScores.classList.remove('jpdy-hide');
+      jpdyPrevGames.classList.add('jpdy-hide');
+      jpdyPracticeNav.classList.remove('jpdy-hide');
+    } else if (location.hash === '#jpdy-practice-nav') {
+      jpdyGame.classList.remove('jpdy-hide');
+      jpdyNavigateButtons.classList.add('jpdy-hide');
+      jpdyScores.classList.add('jpdy-hide');
+      jpdyPrevGames.classList.add('jpdy-hide');
+      jpdyPracticeNav.classList.remove('jpdy-hide');
       practice();
     }
-    navButtons.forEach(function(obj) {
-      if (location.hash === '#' + obj.id) {
-        obj.classList.remove('jpdy-hide');
-      } else {
-        obj.classList.add('jpdy-hide');
-      }
-    });
   }
 
   function compareScores() {
@@ -314,6 +332,50 @@
   }
 
   function practice() {
+    var round;
+    var roundIndex;
+    var catNum;
+    var qNum;
+    var catObject;
+    var keys;
+    var keyIndex;
+    var question;
+    var numKeys = 0;
+    var category;
+    var result;
+
+    roundIndex = Math.floor(Math.random() * 3);
+    round = ['j_categories', 'dj_categories', 'fj_categories'][roundIndex];
+    fb.child(round).child('number').once('value', function(snapshot) {
+      var number = snapshot.val();
+      catNum = Math.floor(Math.random() * number);
+      fb.child(round).child(catNum).once('value', function(catSnapshot) {
+        var value;
+        catObject = catSnapshot.val();
+        category = catObject.category;
+        if (round === 'fj_categories') {
+          qNum = catObject.question;
+          value = '$1000';
+        } else {
+          keys = Object.keys(catObject.questions);
+          keys.forEach(function(key) {
+            if (catObject.questions.hasOwnProperty(key)) {
+              numKeys++;
+            }
+          });
+          keyIndex = Math.floor(Math.random() * numKeys);
+          qNum = keys[keyIndex];
+          value = catObject.questions[qNum];
+        }
+        fb.child('questions').child(qNum).once('value', function(qSnapshot) {
+          question = qSnapshot.val();
+          result = {};
+          result.status = NEW;
+          result.score = 0;
+          updateDisplay(category, question.q, result, value);
+        });
+      });
+    });
     closeDrawer();
   }
 
@@ -555,8 +617,6 @@
   }
 
   function finalPlay() {
-    var jpdyNavigateButtons = querySelector('#jpdy-navigate-buttons');
-
     jpdyNavigateButtons.classList.add('jpdy-hide');
     if (todaysQs[qIndex]) {
       prepForDisplay();
@@ -571,7 +631,6 @@
 
   function prepForDisplay() {
     var value;
-    var wager;
     var result;
 
     value = today === 6 ? 'DD' : gameArray[today].questions[qIndex].value;
@@ -589,16 +648,15 @@
       result.score = result.score || 0;
       userResultsObject.answers[today][qIndex] = result;
     }
-    updateDisplay(result, value);
+    updateDisplay(gameArray[today].category, todaysQs[qIndex].q, result, value);
   }
 
-  function updateDisplay(result, value) {
+  function updateDisplay(category, question, result, value) {
     var wager;
-    var result;
     var questions;
     var jpdyCategory = querySelector('#jpdy-category');
 
-    jpdyCategory.textContent = gameArray[today].category;
+    jpdyCategory.textContent = category;
     wager = result.wager;
     if (result.status === LOCKED || result.status === LIMBO) {
       showAnswer();
@@ -613,7 +671,7 @@
       jpdyValue.textContent = wager || value.slice(1);
       jpdyValueDisplay.classList.remove('jpdy-hide');
       jpdyDDValue.classList.add('jpdy-hide');
-      jpdyClue.textContent = todaysQs[qIndex].q;
+      jpdyClue.textContent = question;
       jpdyClue.classList.remove('mdl-color-text--deep-orange');
     } else {
       jpdyDDValue.classList.remove('jpdy-hide');
