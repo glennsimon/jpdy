@@ -136,33 +136,39 @@
   var jpdySpinner = querySelector('#jpdy-spinner');
   var jpdyButtonPass = querySelector('#jpdy-button-pass');
   var jpdyNavigateButtons = querySelector('#jpdy-navigate-buttons');
+  var jpdyHistoryTable = querySelector('#jpdy-history-table');
   // general initialized vars
   var loggedIn = false;
   var todaysQs = [];
 
   /* ** INITIALIZE ** */
 
-  now = new Date();
-  today = now.getDay() > 0 ? now.getDay() - 1 : 6;
-  setRound();
-  weekStart = new Date(now.getTime() - (today * 24 + now.getHours()) * 3600000);
-  gameMonday = String(weekStart.getDate());
-  gameMonday = gameMonday.length === 1 ? '0' + gameMonday : gameMonday;
-  gameMonday = weekStart.getMonth() + gameMonday;
-  gameMonday = gameMonday.length === 3 ? '0' + gameMonday : gameMonday;
-  gameMonday = weekStart.getFullYear() + gameMonday;
-  fbGameLocation = fb.child('games').child(gameMonday);
-  fbGameLocation.once('value', function(snapshot) {
-    gameArray = snapshot.val();
-    if (gameArray) {
-      // console.log(gameArray);
-      play();
-    } else {
-      initWeek();
-    }
-  });
-  location.hash = '#jpdy-game';
-  setTimeout(refreshPage, 3600000);
+  init();
+
+  function init() {
+    now = new Date();
+    today = now.getDay() > 0 ? now.getDay() - 1 : 6;
+    setRound();
+    weekStart = new Date(now.getTime() -
+        (today * 24 + now.getHours()) * 3600000);
+    gameMonday = String(weekStart.getDate());
+    gameMonday = gameMonday.length === 1 ? '0' + gameMonday : gameMonday;
+    gameMonday = weekStart.getMonth() + gameMonday;
+    gameMonday = gameMonday.length === 3 ? '0' + gameMonday : gameMonday;
+    gameMonday = weekStart.getFullYear() + gameMonday;
+    fbGameLocation = fb.child('games').child(gameMonday);
+    fbGameLocation.once('value', function(snapshot) {
+      gameArray = snapshot.val();
+      if (gameArray) {
+        // console.log(gameArray);
+        play();
+      } else {
+        initWeek();
+      }
+    });
+    location.hash = '#jpdy-game';
+    setTimeout(refreshPage, 3600000);
+  }
 
   function refreshPage() {
     window.location.reload();
@@ -291,6 +297,7 @@
     var uid;
     var userName;
     var score;
+    var sundayScore;
     var name;
     var tdName;
     var tdScore;
@@ -308,8 +315,14 @@
       snapshot.forEach(function(childSnapshot) {
         uid = childSnapshot.key();
         if (gameResultsObject[uid]) {
+          sundayScore = gameResultsObject[uid].answers &&
+              gameResultsObject[uid].answers[6] &&
+              gameResultsObject[uid].answers[6].score;
           score = uid === userId ? userResultsObject.totalScore :
               gameResultsObject[uid].totalScore;
+          if (sundayScore) {
+            score -= sundayScore;
+          }
           userName = childSnapshot.val().userName;
           name = userName ? userName.split(' ')[0] : 'anonymous';
           tdName = document.createElement('td');
@@ -329,7 +342,84 @@
   }
 
   function getPrevGames() {
-    closeDrawer();
+    var uid;
+    var userName;
+    var name;
+    var tbody;
+    var userObject;
+    var userArray = [];
+    var fbUser = fb.child('people');
+
+    tbody = querySelector('#jpdy-history-table tbody');
+    while (tbody) {
+      jpdyHistoryTable.removeChild(tbody);
+      tbody = querySelector('#jpdy-history-table tbody');
+    }
+    fbUser.once('value', function(snapshot) {
+      snapshot.forEach(function(childSnapshot) {
+        uid = childSnapshot.key();
+        userName = childSnapshot.val().userName;
+        name = userName ? userName.split(' ')[0] : 'anonymous';
+        userObject = {};
+        userObject[uid] = name;
+        userArray.push(userObject);
+      });
+      populateHistoryTable(userArray);
+    });
+  }
+
+  function populateHistoryTable(playerArray) {
+    var score;
+    var tdName;
+    var tdScore0;
+    var tdScore1;
+    var tr;
+    var tbody;
+    var player;
+    var lastGames = [];
+    var fbResults = fb.child('results');
+
+    fbResults.orderByKey().limitToLast(3).once('value', function(snapshot) {
+      // console.log(snapshot.val());
+      snapshot.forEach(function(childSnapshot) {
+        lastGames.push(childSnapshot.val());
+        // console.log(childSnapshot.val());
+      });
+      lastGames = lastGames.slice(0, 2);
+      playerArray.forEach(function(playerObject) {
+        player = Object.keys(playerObject)[0];
+        tdName = document.createElement('td');
+        tdName.appendChild(document.createTextNode(playerObject[player]));
+        tdScore0 = document.createElement('td');
+        score = lastGames[1][player] ? lastGames[1][player].totalScore : '-';
+        tdScore0.appendChild(document.createTextNode(score));
+        tdScore1 = document.createElement('td');
+        score = lastGames[0][player] ? lastGames[0][player].totalScore : '-';
+        tdScore1.appendChild(document.createTextNode(score));
+        tr = document.createElement('tr');
+        tr.appendChild(tdName);
+        tr.appendChild(tdScore0);
+        tr.appendChild(tdScore1);
+        tbody = document.createElement('tbody');
+        tbody.appendChild(tr);
+        jpdyHistoryTable.appendChild(tbody);
+      });
+        // if (gameResultsObject[uid]) {
+        //   score = uid === userId ? userResultsObject.totalScore :
+        //       gameResultsObject[uid].totalScore;
+        //   tdName = document.createElement('td');
+        //   tdName.appendChild(document.createTextNode(name));
+        //   tdScore = document.createElement('td');
+        //   tdScore.appendChild(document.createTextNode(score));
+        //   tr = document.createElement('tr');
+        //   tr.appendChild(tdName);
+        //   tr.appendChild(tdScore);
+        //   tbody = document.createElement('tbody');
+        //   tbody.appendChild(tr);
+        //   jpdyHistoryTable.appendChild(tbody);
+        // }
+      closeDrawer();
+    });
   }
 
   function practice() {
@@ -636,7 +726,7 @@
 
   function setRound() {
     if (today < 3) {
-    querySelector('#jpdy-round').textContent = 'first';
+      querySelector('#jpdy-round').textContent = 'first';
     } else if (today < 6) {
       querySelector('#jpdy-round').textContent = 'second';
     } else {
