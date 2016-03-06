@@ -373,6 +373,9 @@
     var tdName;
     var tdScore0;
     var tdScore1;
+    var star;
+    var winningScore0 = 0;
+    var winningScore1 = 0;
     var tr;
     var tbody;
     var player;
@@ -380,21 +383,46 @@
     var fbResults = fb.child('results');
 
     fbResults.orderByKey().limitToLast(3).once('value', function(snapshot) {
-      // console.log(snapshot.val());
       snapshot.forEach(function(childSnapshot) {
         lastGames.push(childSnapshot.val());
-        // console.log(childSnapshot.val());
       });
       lastGames = lastGames.slice(0, 2);
+      playerArray.forEach(function(playerObject) {
+        player = Object.keys(playerObject)[0];
+        if (lastGames[1][player] && 
+            lastGames[1][player].totalScore > winningScore0) {
+          winningScore0 = lastGames[1][player].totalScore;
+        }
+        if (lastGames[0][player] && 
+            lastGames[0][player].totalScore > winningScore1) {
+          winningScore1 = lastGames[0][player].totalScore;
+        }
+      });
       playerArray.forEach(function(playerObject) {
         player = Object.keys(playerObject)[0];
         tdName = document.createElement('td');
         tdName.appendChild(document.createTextNode(playerObject[player]));
         tdScore0 = document.createElement('td');
+        tdScore0.classList.add('jpdy-cell-width');
         score = lastGames[1][player] ? lastGames[1][player].totalScore : '-';
+        if (score === winningScore0) {
+          tdScore0.classList.add('jpdy-winner');
+          star = document.createElement('i');
+          star.classList.add('mdl-color-text--amber', 'material-icons', 'jpdy-star');
+          star.appendChild(document.createTextNode('star'));
+          tdScore0.appendChild(star);
+        }
         tdScore0.appendChild(document.createTextNode(score));
         tdScore1 = document.createElement('td');
+        tdScore1.classList.add('jpdy-cell-width');
         score = lastGames[0][player] ? lastGames[0][player].totalScore : '-';
+        if (score === winningScore1) {
+          tdScore1.classList.add('jpdy-winner');
+          star = document.createElement('i');
+          star.classList.add('mdl-color-text--amber', 'material-icons', 'jpdy-star');
+          star.appendChild(document.createTextNode('star'));
+          tdScore1.appendChild(star);
+        }
         tdScore1.appendChild(document.createTextNode(score));
         tr = document.createElement('tr');
         tr.appendChild(tdName);
@@ -404,20 +432,6 @@
         tbody.appendChild(tr);
         jpdyHistoryTable.appendChild(tbody);
       });
-        // if (gameResultsObject[uid]) {
-        //   score = uid === userId ? userResultsObject.totalScore :
-        //       gameResultsObject[uid].totalScore;
-        //   tdName = document.createElement('td');
-        //   tdName.appendChild(document.createTextNode(name));
-        //   tdScore = document.createElement('td');
-        //   tdScore.appendChild(document.createTextNode(score));
-        //   tr = document.createElement('tr');
-        //   tr.appendChild(tdName);
-        //   tr.appendChild(tdScore);
-        //   tbody = document.createElement('tbody');
-        //   tbody.appendChild(tr);
-        //   jpdyHistoryTable.appendChild(tbody);
-        // }
       closeDrawer();
     });
   }
@@ -681,7 +695,7 @@
       alert('Wager can\'t be greater than 2000!');
       jpdyDDWager.value = '';
       return;
-    } else if (wager > totalScore) {
+    } else if (today < 6 && totalScore > 2000 && wager > totalScore) {
       alert('Wager can\'t be greater than ' +
           userResultsObject.totalScore + '!');
       jpdyDDWager.value = '';
@@ -938,6 +952,8 @@
       }
       loggedIn = false;
       userId = undefined;
+      getGameStatus();
+      jpdyScore.textContent = 0;
     }
     setOnlineStatus();
   });
@@ -988,13 +1004,15 @@
   function getGameStatus() {
     fb.child('results').child(gameMonday).once('value', function(snapshot) {
       gameResultsObject = snapshot.val();
-      if (gameResultsObject) {
+      if (gameResultsObject && userId) {
         snapshot.forEach(function(childSnapshot) {
           if (userId === childSnapshot.key()) {
             userResultsObject = childSnapshot.val();
             jpdyScore.textContent = userResultsObject.totalScore;
           }
         });
+      } else {
+        userResultsObject = undefined;
       }
       userResultsObject = userResultsObject || {};
       userResultsObject.totalScore = userResultsObject.totalScore || 0;

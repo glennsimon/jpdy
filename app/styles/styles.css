@@ -44,7 +44,7 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-#jpdy-score-table {
+#jpdy-score-table, #jpdy-history-table {
   min-width: 250px;
 }
 #jpdy-spinner {
@@ -72,10 +72,26 @@ html, body {
 #jpdy-dd-value {
   justify-content: center;
 }
+.jpdy-star {
+  font-size: 14px;
+}
+.jpdy-winner {
+  background-color: rgb(63, 81, 181);
+  color: white;
+  padding-left: 0;
+}
+.jpdy-cell-width {
+  max-width: 75px;
+}
 .jpdy-pts-label {
   font-size: 17px;
   text-transform: uppercase;
   align-self: center;
+}
+.jpdy-fine-print {
+  font-size: 10px;
+  text-align: center;
+  text-transform: uppercase;
 }
 .jpdy-avatar {
   width: 48px;
