@@ -686,8 +686,7 @@
       jpdyDDWager.value = '';
       return;
     } else if (today < 3 && totalScore > 1000 && wager > totalScore) {
-      alert('Wager can\'t be greater than ' +
-          userResultsObject.totalScore + '!');
+      alert('Wager can\'t be greater than ' + totalScore + '!');
       jpdyDDWager.value = '';
       return;
     }
@@ -696,10 +695,17 @@
       jpdyDDWager.value = '';
       return;
     } else if (today < 6 && totalScore > 2000 && wager > totalScore) {
-      alert('Wager can\'t be greater than ' +
-          userResultsObject.totalScore + '!');
+      alert('Wager can\'t be greater than ' + totalScore + '!');
       jpdyDDWager.value = '';
       return;
+    }
+    if (today === 6 && wager > totalScore) {
+      alert('Wager can\'t be greater than ' + totalScore + '!');
+      jpdyDDWager.value = '';
+      return;
+    }
+    if (today === 6 && totalScore < 0) {
+      wager = 0;
     }
     if (today === 6) {
       userResultsObject.answers[6] = userResultsObject.answers[6] || {};
