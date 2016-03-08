@@ -982,16 +982,10 @@
   function recordAuth(authData) {
     var fbUser = fb.child('people').child(userId);
 
-    fbUser.once('value', function(snapshot) {
-      var userObject = snapshot.val();
-
-      if (!userObject) {
-        // Use update instead of set in case there is a race condition
-        fbUser.update({
-          userName: authData.google.displayName,
-          provider: 'google'
-        });
-      }
+    // Use update instead of set in case there is a race condition
+    fbUser.update({
+      userName: authData.google.displayName,
+      provider: 'google'
     });
   }
 
