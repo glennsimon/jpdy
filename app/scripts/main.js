@@ -150,7 +150,7 @@
     today = now.getDay() > 0 ? now.getDay() - 1 : 6;
     setRound();
     weekStart = new Date(now.getTime() -
-        (today * 24 + now.getHours()) * 3600000);
+        (today * 24 + now.getTimezoneOffset(0) / 60) * 3600000);
     gameMonday = String(weekStart.getDate());
     gameMonday = gameMonday.length === 1 ? '0' + gameMonday : gameMonday;
     gameMonday = weekStart.getMonth() + gameMonday;
@@ -314,7 +314,7 @@
     fbUser.once('value', function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
         uid = childSnapshot.key();
-        if (gameResultsObject[uid]) {
+        if (gameResultsObject && gameResultsObject[uid]) {
           sundayScore = gameResultsObject[uid].answers &&
               gameResultsObject[uid].answers[6] &&
               gameResultsObject[uid].answers[6].score;
