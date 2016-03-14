@@ -149,8 +149,7 @@
     now = new Date();
     today = now.getDay() > 0 ? now.getDay() - 1 : 6;
     setRound();
-    weekStart = new Date(now.getTime() -
-        (today * 24 + now.getTimezoneOffset(0) / 60) * 3600000);
+    weekStart = new Date(now.getTime() - today * 24 * 3600000);
     gameMonday = String(weekStart.getDate());
     gameMonday = gameMonday.length === 1 ? '0' + gameMonday : gameMonday;
     gameMonday = weekStart.getMonth() + gameMonday;
